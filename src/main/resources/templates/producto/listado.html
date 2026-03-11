@@ -15,7 +15,7 @@
 <body>
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
-            <a class="navbar-brand" href="#">Concentrados Danny - AgroTienda</a>
+            <a class="navbar-brand" href="#">Concentrados Danny - Alimentos</a>
         </div>
     </nav>
 
@@ -39,19 +39,29 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
+                                    <th>Marca</th>
                                     <th>Especie</th>
-                                    <th>Venta por</th> <th>Precio</th>
+                                    <th>Venta por</th> 
+                                    <th>Precio</th>
                                     <th>Existencias</th>
-                                    <th>Acciones</th> </tr>
+                                    <th>Acciones</th> 
+                                </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="producto, contador : ${productos}">
                                     <td>[[${contador.count}]]</td>
                                     <td>[[${producto.nombre}]]</td>
+                                    <td>[[${producto.marca}]]</td>
                                     <td>[[${producto.especie}]]</td>
-                                    <td>[[${producto.unidadMedida}]]</td> <td>₡[[${producto.precio}]]</td>
+                                    <td>[[${producto.unidadMedida}]]</td> 
+                                    <td>₡[[${producto.precio}]]</td>
                                     <td>[[${producto.existencias}]]</td>
                                     <td>
+                                        <a th:href="@{/producto/modificar/}+${producto.idProducto}" 
+                                           class="btn btn-outline-success btn-sm me-2">
+                                           <i class="fas fa-pencil"></i> Editar
+                                        </a>
+                                        
                                         <a th:href="@{/producto/eliminar/}+${producto.idProducto}" 
                                            class="btn btn-outline-danger btn-sm"
                                            onclick="return confirmarEliminacion(this.getAttribute('data-nombre'))"
@@ -84,6 +94,12 @@
                             <label class="form-label">Nombre del Concentrado</label>
                             <input type="text" name="nombre" class="form-control" required/>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" name="marca" class="form-control" placeholder="Ej: Aguilar, Super Perro" required/>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Especie</label>
                             <select name="especie" class="form-select">
@@ -94,6 +110,7 @@
                                 <option value="Tilapias">Tilapias</option>
                             </select>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Unidad de Medida</label>
                             <select name="unidadMedida" class="form-select">
@@ -102,10 +119,12 @@
                                 <option value="Unidad">Unidad</option>
                             </select>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Precio (₡)</label>
                             <input type="number" name="precio" class="form-control" step="0.01" required/>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Existencias</label>
                             <input type="number" name="existencias" class="form-control" required/>

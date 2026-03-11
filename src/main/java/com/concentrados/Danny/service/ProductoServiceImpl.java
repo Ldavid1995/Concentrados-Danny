@@ -1,4 +1,4 @@
-package com.concentrados.Danny.service.impl; // Se suele usar un sub-paquete .impl
+package com.concentrados.Danny.service.impl;
 
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.repository.ProductoRepository;

@@ -1,12 +1,12 @@
 package com.concentrados.Danny.controller;
 
-import com.concentrados.Danny.domain.Producto; // Importante agregar este
+import com.concentrados.Danny.domain.Producto; 
 import com.concentrados.Danny.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping; // Importante agregar este
+import org.springframework.web.bind.annotation.PostMapping; 
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -24,7 +24,6 @@ public class ProductoController {
         return "/producto/listado";
     }
 
-    // --- NUEVOS MÉTODOS CRUD ---
 
     @PostMapping("/guardar")
     public String guardar(Producto producto) {
@@ -37,4 +36,11 @@ public class ProductoController {
         productoService.delete(producto);
         return "redirect:/producto/listado";
     }
+    
+    @GetMapping("/modificar/{idProducto}")
+public String modificar(Producto producto, Model model) {
+    producto = productoService.getProducto(producto); 
+    model.addAttribute("producto", producto);
+    return "/producto/modifica"; 
+}
 }

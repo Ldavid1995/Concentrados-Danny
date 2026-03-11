@@ -2,7 +2,7 @@ package com.concentrados.Danny.domain;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import lombok.Data; // Si usas Lombok, esto te ahorra los Getters/Setters
+import lombok.Data; 
 
 @Data
 @Entity
@@ -22,9 +22,8 @@ public class Producto implements Serializable {
     private int existencias;
     private String rutaImagen;
     
-    // AQUÍ ES DONDE VA LA NUEVA LÍNEA
+
     private String unidadMedida; 
     
-    // Si NO tienes @Data de Lombok, aquí abajo debes dar clic derecho 
-    // -> Insert Code -> Getter and Setter -> Seleccionar unidadMedida.
+
 }
