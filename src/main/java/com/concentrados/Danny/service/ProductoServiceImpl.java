@@ -16,14 +16,14 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Producto> getProductos() {
+    public List<Producto> obtenerTodos() { 
         return productoRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Producto getProducto(Producto producto) {
-        return productoRepository.findById(producto.getIdProducto()).orElse(null);
+    public List<Producto> buscarPorPalabra(String keyword) { 
+        return productoRepository.findByKeyword(keyword);
     }
 
     @Override
@@ -36,5 +36,11 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional
     public void delete(Producto producto) {
         productoRepository.delete(producto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Producto getProducto(Producto producto) {
+        return productoRepository.findById(producto.getIdProducto()).orElse(null);
     }
 }
