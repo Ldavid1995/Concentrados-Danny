@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping; 
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/producto")
@@ -19,7 +20,7 @@ public class ProductoController {
     private ProductoService productoService;
 
     @GetMapping("/listado")
-        public String listarProductos(@Param("keyword") String keyword, Model model) {
+        public String listarProductos(@Param("keyword") String keyword,@Param("especie") String especie,Model model) {
             List<Producto> productos;
 
             if (keyword != null && !keyword.isEmpty()) {
@@ -27,9 +28,17 @@ public class ProductoController {
             } else {
                 productos = productoService.obtenerTodos();
             }
+            
+            if (especie != null && !especie.isEmpty()) {
+        String especieFiltro = especie.trim();
+        productos = productos.stream()
+                .filter(p -> p.getEspecie() != null && p.getEspecie().equalsIgnoreCase(especieFiltro))
+                .collect(Collectors.toList());
+    }
 
             model.addAttribute("productos", productos);
             model.addAttribute("keyword", keyword); // Esto mantiene el texto en la barra de búsqueda
+            model.addAttribute("especieSeleccionada", especie);
             return "producto/listado";
         }
 
