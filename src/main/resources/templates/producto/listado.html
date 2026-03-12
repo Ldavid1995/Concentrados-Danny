@@ -42,21 +42,49 @@
             <div class="col-md-12">
                 <div class="card shadow-sm">
                     <div class="card-header">
-                        <h4>Nuestros Concentrados (Perros, Gatos, Tilapias y más)</h4>
+                        <h4>Nuestros Concentrados </h4>
                     </div>
                     <div class="card-body">
                         
-                        <div class="row mb-4 align-items-center">
+                        <div th:if="${especieSeleccionada == null or especieSeleccionada == ''}">
+                            <div class="text-center mb-4">
+                                <h5 class="especie-titulo">Seleccione una especie</h5>
+                            </div>
+                            <div class="row g-3 especie-nav">
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Perros')}">1 Perros</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Gatos')}">2 Gatos</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Peces')}">3 Peces</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Porcinos')}">4 Porcinos</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Bovinos')}">5 Bovinos</a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a class="btn btn-outline-success w-100" th:href="@{/producto/listado(especie='Aves')}">6 Aves</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${especieSeleccionada != null and especieSeleccionada != ''}">
+                            <div class="row mb-4 align-items-center">
                             <div class="col-md-8">
                                 <form th:action="@{/producto/listado}" method="get" class="d-flex">
+                                    <input type="hidden" name="especie" th:value="${especieSeleccionada}">
                                     <input type="text" name="keyword" th:value="${keyword}" 
                                            class="form-control me-2" 
-                                           placeholder="Buscar por nombre, marca o especie (Perros, Gatos...)" required>
+                                           placeholder="Buscar por nombre o marca (Perros, Gatos...)" required>
                                          
                                     <button type="submit" class="btn btn-outline-success">
                                         <i class="fas fa-search"></i>
                                     </button>
-                                    <a th:href="@{/producto/listado}" class="btn btn-outline-secondary ms-1" title="Limpiar búsqueda">
+                                    <a th:href="@{/producto/listado(especie=${especieSeleccionada})}" class="btn btn-outline-secondary ms-1" title="Limpiar búsqueda">
                                         <i class="fas fa-eraser"></i>
                                     </a>
                                 </form>
@@ -67,6 +95,13 @@
                                 </button>
                             </div>
                         </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="especie-titulo mb-0">Especie: [[${especieSeleccionada}]]</h5>
+                                <a class="btn btn-outline-secondary btn-sm" th:href="@{/producto/listado}">
+                                    Volver a especies
+                                </a>
+                            </div>
 
                         <table class="table table-hover align-middle">
                             <thead class="table-success">
