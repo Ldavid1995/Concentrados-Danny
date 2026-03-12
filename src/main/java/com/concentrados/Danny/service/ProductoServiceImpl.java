@@ -4,6 +4,7 @@ import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.repository.ProductoRepository;
 import com.concentrados.Danny.service.ProductoService;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,15 +45,32 @@ public class ProductoServiceImpl implements ProductoService {
         return productoRepository.findById(producto.getIdProducto()).orElse(null);
     }
 
+    // --- MÉTODOS PARA REPORTES (Nombres unificados con el Controller) ---
+
     @Override
     @Transactional(readOnly = true)
-    public List<Object[]> stockPorMarca() {
-        return productoRepository.obtenerStockPorMarca();
+    public List<Object[]> obtenerStockPorMarca() {
+        List<Producto> productos = productoRepository.findAll();
+        
+        // Agrupamos por marca y sumamos existencias usando Stream API
+        return productos.stream()
+            .filter(p -> p.getMarca() != null && !p.getMarca().isEmpty())
+            .collect(Collectors.groupingBy(
+                Producto::getMarca, 
+                Collectors.summingInt(Producto::getExistencias)
+            ))
+            .entrySet().stream()
+            .map(e -> new Object[]{e.getKey(), e.getValue()})
+            .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Double valorTotal() {
-        return productoRepository.obtenerValorTotalInventario();
+    public Double calcularValorInventario() {
+        List<Producto> productos = productoRepository.findAll();
+        // Suma de (Precio * Existencias) para obtener el valor real del inventario
+        return productos.stream()
+            .mapToDouble(p -> p.getPrecio() * p.getExistencias())
+            .sum();
     }
 }

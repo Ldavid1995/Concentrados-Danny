@@ -6,17 +6,24 @@
 </head>
 <body>
     <div class="container mt-5">
-        <div class="card">
+        <div class="card shadow">
             <div class="card-header bg-success text-white">
                 <h4>Modificar Concentrado</h4>
             </div>
             <div class="card-body">
-                <form th:action="@{/producto/guardar}" th:object="${producto}" method="POST">
+                <form th:action="@{/producto/guardar}" th:object="${producto}" method="POST" enctype="multipart/form-data">
+                    
                     <input type="hidden" name="idProducto" th:field="*{idProducto}"/>
                     
+                    <input type="hidden" name="fichaTecnica" th:field="*{fichaTecnica}"/>
+
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
                         <input type="text" name="nombre" th:field="*{nombre}" class="form-control" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Marca</label>
+                        <input type="text" name="marca" th:field="*{marca}" class="form-control" placeholder="Ej: Mimados, Aguilar..."/>
                     </div>
                     
                     <div class="mb-3">
@@ -45,6 +52,14 @@
                     <div class="mb-3">
                         <label class="form-label">Existencias</label>
                         <input type="number" name="existencias" th:field="*{existencias}" class="form-control" required/>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="archivoFicha" class="form-label fw-bold">Actualizar Ficha Técnica</label>
+                        <input class="form-control" type="file" name="archivoFicha" id="archivoFicha">
+                        <div th:if="${producto.fichaTecnica != null}" class="form-text text-primary">
+                            Ficha actual: <span th:text="${producto.fichaTecnica}"></span>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-between">

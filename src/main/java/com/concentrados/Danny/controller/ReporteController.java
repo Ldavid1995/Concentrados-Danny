@@ -16,8 +16,8 @@ public class ReporteController {
 
     @GetMapping("/principal")
     public String mostrarReportes(Model model) {
-        model.addAttribute("stockMarcas", productoService.stockPorMarca());
-        model.addAttribute("totalDinero", productoService.valorTotal());
+        model.addAttribute("stockMarcas", productoService.obtenerStockPorMarca());
+        model.addAttribute("totalDinero", productoService.calcularValorInventario());
         return "producto/reportes"; 
     }
 }

@@ -4,14 +4,12 @@ import com.concentrados.Danny.domain.Producto;
 import java.util.List;
 
 public interface ProductoService {
-    
+    List<Producto> obtenerTodos();
+    List<Producto> buscarPorPalabra(String keyword);
+    void save(Producto producto);
+    void delete(Producto producto);
+    Producto getProducto(Producto producto);
 
-    public List<Producto> obtenerTodos();
-    public List<Producto> buscarPorPalabra(String keyword);
-    public List<Object[]> stockPorMarca();
-    public Double valorTotal();
-    
-    public void save(Producto producto);
-    public void delete(Producto producto);
-    public Producto getProducto(Producto producto);
+    List<Object[]> obtenerStockPorMarca();
+    Double calcularValorInventario(); 
 }
