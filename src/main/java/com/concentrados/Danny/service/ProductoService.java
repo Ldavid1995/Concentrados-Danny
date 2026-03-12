@@ -8,6 +8,8 @@ public interface ProductoService {
 
     public List<Producto> obtenerTodos();
     public List<Producto> buscarPorPalabra(String keyword);
+    public List<Object[]> stockPorMarca();
+    public Double valorTotal();
     
     public void save(Producto producto);
     public void delete(Producto producto);

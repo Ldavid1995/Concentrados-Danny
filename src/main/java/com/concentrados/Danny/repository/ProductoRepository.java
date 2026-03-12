@@ -16,4 +16,10 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
            "p.especie LIKE %:keyword%") // <-- Agregamos esta línea
     List<Producto> findByKeyword(@Param("keyword") String keyword);
     
+    @Query("SELECT p.marca, SUM(p.existencias) FROM Producto p GROUP BY p.marca")
+    List<Object[]> obtenerStockPorMarca();
+
+    @Query("SELECT SUM(p.precio * p.existencias) FROM Producto p")
+    Double obtenerValorTotalInventario();
+    
 }

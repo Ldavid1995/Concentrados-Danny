@@ -43,4 +43,16 @@ public class ProductoServiceImpl implements ProductoService {
     public Producto getProducto(Producto producto) {
         return productoRepository.findById(producto.getIdProducto()).orElse(null);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Object[]> stockPorMarca() {
+        return productoRepository.obtenerStockPorMarca();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Double valorTotal() {
+        return productoRepository.obtenerValorTotalInventario();
+    }
 }
