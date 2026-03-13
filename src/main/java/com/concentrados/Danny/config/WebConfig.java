@@ -9,7 +9,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Esto crea un "puente" entre la URL /fichas/ y tu carpeta física
         registry.addResourceHandler("/fichas/**")
                 .addResourceLocations("file:src/main/resources/static/fichas/");
     }

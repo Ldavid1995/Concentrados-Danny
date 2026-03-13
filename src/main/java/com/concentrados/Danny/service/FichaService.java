@@ -17,11 +17,9 @@ public class FichaService {
             Path path = Paths.get(folder);
             if (!Files.exists(path)) Files.createDirectories(path);
             
-            // LIMPIEZA DEL NOMBRE (ID-12 Mejorada)
-            // Quitamos espacios, tildes y caracteres raros
             String nombreOriginal = archivo.getOriginalFilename();
-            String nombreLimpio = nombreOriginal.replaceAll("\\s+", "_") // Espacios a guiones bajos
-                                               .replaceAll("[^a-zA-Z0-9._-]", ""); // Solo letras, números y puntos
+            String nombreLimpio = nombreOriginal.replaceAll("\\s+", "_") 
+                                               .replaceAll("[^a-zA-Z0-9._-]", ""); 
             
             String nombreFinal = System.currentTimeMillis() + "_" + nombreLimpio;
             Path rutaCompleta = path.resolve(nombreFinal);

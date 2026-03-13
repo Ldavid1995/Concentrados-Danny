@@ -45,14 +45,12 @@ public class ProductoServiceImpl implements ProductoService {
         return productoRepository.findById(producto.getIdProducto()).orElse(null);
     }
 
-    // --- MÉTODOS PARA REPORTES (Nombres unificados con el Controller) ---
 
     @Override
     @Transactional(readOnly = true)
     public List<Object[]> obtenerStockPorMarca() {
         List<Producto> productos = productoRepository.findAll();
         
-        // Agrupamos por marca y sumamos existencias usando Stream API
         return productos.stream()
             .filter(p -> p.getMarca() != null && !p.getMarca().isEmpty())
             .collect(Collectors.groupingBy(
@@ -68,7 +66,6 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional(readOnly = true)
     public Double calcularValorInventario() {
         List<Producto> productos = productoRepository.findAll();
-        // Suma de (Precio * Existencias) para obtener el valor real del inventario
         return productos.stream()
             .mapToDouble(p -> p.getPrecio() * p.getExistencias())
             .sum();

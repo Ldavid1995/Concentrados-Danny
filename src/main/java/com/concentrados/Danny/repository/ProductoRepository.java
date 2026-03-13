@@ -13,7 +13,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     @Query("SELECT p FROM Producto p WHERE " +
            "p.nombre LIKE %:keyword% OR " +
            "p.marca LIKE %:keyword% OR " +
-           "p.especie LIKE %:keyword%") // <-- Agregamos esta línea
+           "p.especie LIKE %:keyword%") 
     List<Producto> findByKeyword(@Param("keyword") String keyword);
     
     @Query("SELECT p.marca, SUM(p.existencias) FROM Producto p GROUP BY p.marca")
