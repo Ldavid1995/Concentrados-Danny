@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import com.concentrados.Danny.service.ProductoPdfService;
 
 @Controller
 @RequestMapping("/producto")
@@ -93,5 +96,20 @@ public class ProductoController {
         model.addAttribute("hayStockBajo", hayStockBajo);
 
         return "producto/reportes";
+    }
+    @GetMapping("/cobertura")
+    public String mostrarCobertura(Model model) {
+    return "producto/cobertura"; 
+    }
+    
+    @GetMapping("/exportar-pdf")
+    public void exportarAPdf(HttpServletResponse response) throws IOException {
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Catalogo_Danny.pdf");
+
+        List<Producto> productos = productoService.obtenerTodos(); 
+
+        ProductoPdfService exporter = new ProductoPdfService();
+        exporter.exportar(response, productos);
     }
 }

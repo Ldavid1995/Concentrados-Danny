@@ -3,6 +3,8 @@ package com.concentrados.Danny.domain;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import lombok.Data; 
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 @Entity
@@ -24,6 +26,11 @@ public class Producto implements Serializable {
     private String fichaTecnica;
 
     private String unidadMedida; 
+    
+    private String lote;
+
+@DateTimeFormat(pattern = "yyyy-MM-dd")
+private LocalDate fechaVencimiento; 
     
 
 }
