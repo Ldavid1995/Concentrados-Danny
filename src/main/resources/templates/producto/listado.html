@@ -46,7 +46,7 @@
                         <h5 class="especie-titulo">Seleccione una especie para ver los productos</h5>
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-4" th:each="esp : ${ {'Perros', 'Gatos', 'Peces', 'Porcinos', 'Bovinos', 'Aves'} }">
+                        <div class="col-md-4" th:each="esp : ${ {'Perros', 'Gatos', 'Peces', 'Porcinos', 'Bovinos', 'Aves', 'Pollos(Venta Unidad)'} }">
                             <a class="btn btn-outline-success w-100 py-3 fw-bold" 
                                th:href="@{/producto/listado(especie=${esp})}" 
                                th:text="${esp}">Especie</a>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="col-md-5 text-md-end mt-2 mt-md-0">
                             <button type="button" class="btn btn-verde" data-bs-toggle="modal" data-bs-target="#agregarProducto">
-                                <i class="fas fa-plus"></i> Nuevo Concentrado
+                                <i class="fas fa-plus"></i> Agregar Nuevo
                             </button>
                         </div>
                     </div>
@@ -167,7 +167,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-pills me-2"></i>Nuevo Concentrado</h5>
+                    <h5 class="modal-title"><i class="fas fa-pills me-2"></i>Agregar Nuevo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form th:action="@{/producto/guardar}" method="POST" enctype="multipart/form-data">

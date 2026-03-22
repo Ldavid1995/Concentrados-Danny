@@ -80,12 +80,17 @@
                         <div th:if="${producto.fichaTecnica != null}" class="form-text text-primary">
                             Ficha actual: <span th:text="${producto.fichaTecnica}"></span>
                         </div>
-                    </div>
+                  
+                            <div class="d-flex justify-content-between">
+<a th:href="@{/producto/listado(especie=${producto.especie})}" class="btn btn-secondary">
+    Regresar
+</a>
 
-                    <div class="d-flex justify-content-between">
-                        <a th:href="@{/producto/listado}" class="btn btn-secondary">Regresar</a>
-                        <button type="submit" class="btn btn-success">Actualizar Cambios</button>
-                    </div>
+                                <button type="submit" class="btn btn-success">
+                                    Actualizar Cambios
+                                </button>
+                            </div>
+
                 </form>
             </div>
         </div>
