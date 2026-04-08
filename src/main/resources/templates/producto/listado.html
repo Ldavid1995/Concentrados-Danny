@@ -149,6 +149,9 @@
                                            onclick="return confirm('¿Eliminar producto?')" th:data-nombre="${producto.nombre}">
                                             <i class="fas fa-trash"></i>
                                         </a>
+                                        <a th:href="@{/facturacion/}+${producto.idProducto}" class="btn btn-outline-warning btn-sm" title="Facturar / Cobrar">
+                                            <i class="fas fa-credit-card"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             </tbody>

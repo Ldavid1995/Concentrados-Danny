@@ -34,6 +34,13 @@ public class SecurityConfig {
                     "/fichas/**",
                     "/webjars/**"
             ).permitAll();
+            
+            requests.requestMatchers(
+                    "/",
+                    "/producto/**",
+                    "/facturacion/**",
+                    "/reporte/**"
+            ).authenticated();
 
             for (Ruta ruta : rutas) {
                 if (ruta.isRequiereRol()) {

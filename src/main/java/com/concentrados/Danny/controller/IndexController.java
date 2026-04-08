@@ -9,6 +9,6 @@ public class IndexController {
 
     @GetMapping("/")
     public String inicio(Model model) {
-        return "/index/index"; 
+        return "index"; 
     }
 }
