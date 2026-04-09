@@ -17,6 +17,10 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.concentrados.Danny.service.ProductoPdfService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/producto")
@@ -29,7 +33,7 @@ public class ProductoController {
     private FichaService fichaService;
 
     @GetMapping("/listado")
-    public String listarProductos(@Param("keyword") String keyword, @Param("especie") String especie, Model model) {
+    public String listarProductos(@Param("keyword") String keyword, @Param("especie") String especie, Model model, HttpSession session, HttpServletRequest request) {
         List<Producto> productos;
 
         if (keyword != null && !keyword.isEmpty()) {
@@ -48,6 +52,8 @@ public class ProductoController {
         model.addAttribute("productos", productos);
         model.addAttribute("keyword", keyword);
         model.addAttribute("especieSeleccionada", especie);
+        model.addAttribute("wishlistIds", obtenerWishlist(session));
+        model.addAttribute("currentUrl", construirUrlActual(request));
         return "producto/listado";
     }
 
@@ -111,5 +117,22 @@ public class ProductoController {
 
         ProductoPdfService exporter = new ProductoPdfService();
         exporter.exportar(response, productos);
+    }
+    @SuppressWarnings("unchecked")
+    private Set<Long> obtenerWishlist(HttpSession session) {
+        Object valor = session.getAttribute("wishlistIds");
+        if (valor instanceof Set) {
+            return (Set<Long>) valor;
+        }
+        return Collections.emptySet();
+    }
+
+    private String construirUrlActual(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        if (query == null || query.isBlank()) {
+            return uri;
+        }
+        return uri + "?" + query;
     }
 }

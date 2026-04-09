@@ -24,6 +24,9 @@
                 <a href="/" title="Inicio" class="text-white fs-4 me-3">
                     <i class="fas fa-home"></i>
                 </a>
+                <a class="nav-link text-white fw-bold me-3" th:href="@{/deseos/lista}">
+                    <i class="fas fa-heart me-1"></i> Lista de Deseos
+                </a>
                 <a class="nav-link text-white fw-bold me-3" th:href="@{/producto/cobertura}">
                 <i class="fas fa-map-marker-alt me-1"></i> Cobertura
                 </a>
@@ -128,6 +131,16 @@
                                     </td>
                                     
                                     <td class="text-center">
+                                        <a th:if="${wishlistIds != null and wishlistIds.contains(producto.idProducto)}"
+                                           th:href="@{/deseos/quitar/{idProducto}(idProducto=${producto.idProducto}, redirect=${currentUrl})}"
+                                           class="btn btn-outline-danger btn-sm me-1" title="Quitar de Lista de Deseos">
+                                            <i class="fas fa-heart"></i>
+                                        </a>
+                                        <a th:if="${wishlistIds == null or !wishlistIds.contains(producto.idProducto)}"
+                                           th:href="@{/deseos/agregar/{idProducto}(idProducto=${producto.idProducto}, redirect=${currentUrl})}"
+                                           class="btn btn-outline-secondary btn-sm me-1" title="Agregar a Lista de Deseos">
+                                            <i class="fas fa-heart"></i>
+                                        </a>
                                         <a th:if="${producto.fichaTecnica != null}" 
                                            th:href="@{'/fichas/' + ${producto.fichaTecnica}}" 
                                            target="_blank" 
