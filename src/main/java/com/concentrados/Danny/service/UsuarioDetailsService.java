@@ -33,7 +33,7 @@ public class UsuarioDetailsService implements UserDetailsService{
         session.setAttribute("imagenUsuario", usuario.getRutaImagen());
 
         var roles = usuario.getRoles().stream()
-                .map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.getRol()))
+                .map(rol -> new SimpleGrantedAuthority(rol.getNombre())) 
                 .collect(Collectors.toSet());
 
         return new User(usuario.getUsername(), usuario.getPassword(), roles);

@@ -54,4 +54,27 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Crear tabla de usuario
+CREATE TABLE IF NOT EXISTS `usuario` (
+  `id_usuario` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(20) NOT NULL,
+  `password` VARCHAR(500) NOT NULL,
+  `nombre` VARCHAR(30) NOT NULL,
+  `apellidos` VARCHAR(30) NOT NULL,
+  `correo` VARCHAR(50) DEFAULT NULL,
+  `telefono` VARCHAR(15) DEFAULT NULL,
+  `ruta_imagen` VARCHAR(1024) DEFAULT NULL,
+  `activo` BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Crear tabla de roles
+CREATE TABLE IF NOT EXISTS `rol` (
+  `id_rol` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(30) NOT NULL,
+  `id_usuario` INT NOT NULL,
+  PRIMARY KEY (`id_rol`),
+  FOREIGN KEY (`id_usuario`) REFERENCES `usuario`(`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Dump completed on 2026-03-10 23:17:26

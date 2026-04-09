@@ -2,6 +2,7 @@ package com.concentrados.Danny.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class LoginController {
@@ -13,5 +14,10 @@ public class LoginController {
     @GetMapping("/acceso_denegado")
     public String accesoDenegado() {
         return "acceso_denegado";
+    }
+    @PostMapping("/login")
+    public String procesarLoginSimulado() {
+        // Esto atrapa el POST del formulario y te manda directo al inicio
+        return "redirect:/"; 
     }
 }

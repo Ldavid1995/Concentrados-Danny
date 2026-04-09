@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{general/fragmentos :: head}"></head>
+<body>
+    <header th:replace="~{general/fragmentos :: header}"/>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-info text-white text-center py-3">
+                        <h4><i class="fas fa-envelope me-2"></i>Recuperar Contraseña</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted text-center">Ingresa tu correo electrónico y te enviaremos las instrucciones.</p>
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    <input type="email" class="form-control" placeholder="ejemplo@correo.com" required/>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="button" class="btn btn-info text-white">Enviar Instrucciones</button>
+                                <a th:href="@{/login}" class="btn btn-outline-secondary">Volver al Login</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer th:replace="~{general/fragmentos :: footer}"/>
+</body>
+</html>
