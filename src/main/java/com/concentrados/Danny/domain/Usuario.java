@@ -31,7 +31,7 @@ public class Usuario implements Serializable {
     
     private boolean activo;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_usuario") 
     private List<Rol> roles;
 }

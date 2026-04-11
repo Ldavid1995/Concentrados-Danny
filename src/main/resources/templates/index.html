@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> 
 <head>
     <title>Concentrados Danny - Inicio</title>
     <meta charset="UTF-8"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #ffffff; }
+        
+        /* Estilo para el nombre de usuario en el Navbar */
+        .user-name-top {
+            font-size: 0.95rem;
+            color: #d4edda !important; /* Verde claro para resaltar suavemente */
+        }
+
         .hero-section { 
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1350&q=80'); 
             height: 300px; 
@@ -21,12 +30,13 @@
             color: white; 
             border: none; 
             padding: 25px; 
-            font-size: 1.2rem; 
+            font-size: 1.1rem; 
             border-radius: 10px; 
             transition: 0.3s; 
             display: block;
             text-decoration: none;
             width: 100%;
+            height: 100%; 
         }
         .btn-categoria:hover { 
             background-color: #218838; 
@@ -34,7 +44,6 @@
             color: white; 
         }
 
-        /* Estilos del Footer */
         .main-footer {
             background-color: #155724;
             color: white;
@@ -61,10 +70,27 @@
 </head>
 <body>
 
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #155724;">
+        <div class="container-fluid">
+            <div class="navbar-text fw-bold d-flex align-items-center user-name-top" sec:authorize="isAuthenticated()">
+                <i class="fas fa-user-circle me-2 fs-5"></i>
+                <span th:text="${#authentication.name}">Usuario</span>
+            </div>
+
+            <div class="ms-auto" sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
     <div class="hero-section">
         <div class="container">
             <div class="d-flex align-items-center justify-content-center gap-4">
-                <img src="/images/logo_danny.png" alt="Logo" style="height: 150px; width: auto;">
+                <img th:src="@{/images/logo_danny.png}" alt="Logo" style="height: 150px; width: auto;">
                 <div class="text-start">
                     <h1 class="display-3 mb-0">Concentrados Danny</h1>
                     <p class="lead">Los mejores concentrados para tus animales</p>
@@ -76,20 +102,31 @@
     <div class="container text-center my-5">
         <h2 class="mb-4" style="color: #155724;">Elige una opción</h2>
         <div class="row justify-content-center g-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <a th:href="@{/producto/listado}" class="btn-categoria">
-                    🐾 Todos los Productos
+                    <i class="fas fa-paw"></i> Todos los Productos
                 </a>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <a th:href="@{/deseos/lista}" class="btn-categoria" style="background-color: #8b5a2b;">
-                     Lista de Deseos
+                    <i class="fas fa-heart"></i> Lista de Deseos
                 </a>
             </div>
-            <div class="col-md-4">
-                <a href="https://www.google.com/maps/search/San+Rafael+de+Guatuso,+Alajuela" 
-                   target="_blank" class="btn-categoria" style="background-color: #007bff;">
-                    📍 Nuestra Ubicación
+            <div class="col-md-3">
+                <a href="https://maps.google.com" target="_blank" class="btn-categoria" style="background-color: #007bff;">
+                    <i class="fas fa-map-marker-alt"></i> Nuestra Ubicación
+                </a>
+            </div>
+            
+            <div class="col-md-3" sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="btn-categoria" style="background-color: #343a40;">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+            </div>
+            
+            <div class="col-md-3" sec:authorize="isAuthenticated()">
+                <a th:href="@{/producto/listado}" class="btn-categoria" style="background-color: #6c757d;">
+                    <i class="fas fa-th-list"></i> Mi Panel
                 </a>
             </div>
         </div>
@@ -119,7 +156,7 @@
             </div>
             <div class="row copyright text-center">
                 <div class="col">
-                    <p>Concentrados Danny &copy; [[${#dates.format(#dates.createNow(), 'yyyy')}]] - Todos los derechos reservados</p>
+                    <p>Concentrados Danny © [[${#dates.format(#dates.createNow(), 'yyyy')}]] - Todos los derechos reservados</p>
                 </div>
             </div>
         </div>
