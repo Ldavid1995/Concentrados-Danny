@@ -88,7 +88,6 @@ public class ProductoController {
         return "/producto/modifica";
     }
 
-
     @GetMapping("/reportes")
     public String verReportes(Model model) {
         List<Object[]> stockMarcas = productoService.obtenerStockPorMarca();
@@ -103,11 +102,18 @@ public class ProductoController {
 
         return "producto/reportes";
     }
+
     @GetMapping("/cobertura")
     public String mostrarCobertura(Model model) {
-    return "producto/cobertura"; 
+        return "producto/cobertura"; 
     }
     
+
+    @GetMapping("/calculadora")
+    public String mostrarCalculadora(Model model) {
+        return "producto/calculadora"; 
+    }
+
     @GetMapping("/exportar-pdf")
     public void exportarAPdf(HttpServletResponse response) throws IOException {
         response.setContentType("application/pdf");
@@ -118,6 +124,7 @@ public class ProductoController {
         ProductoPdfService exporter = new ProductoPdfService();
         exporter.exportar(response, productos);
     }
+
     @SuppressWarnings("unchecked")
     private Set<Long> obtenerWishlist(HttpSession session) {
         Object valor = session.getAttribute("wishlistIds");

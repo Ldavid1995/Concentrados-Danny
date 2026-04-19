@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{general/fragmentos :: head}"></head>
+<body>
+    <header th:replace="~{general/fragmentos :: header}"></header>
+
+    <div class="container my-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header py-3 bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-calculator me-2"></i>Calculadora de Raciones</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted">Calcula la cantidad de concentrado necesaria según el peso de tu animal.</p>
+                
+                <form id="calcForm" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Especie</label>
+                            <select id="especie" class="form-select" required onchange="actualizarInfoEspecie()">
+                                <option value="">Seleccione la especie...</option>
+                                <optgroup label="Mascotas">
+                                    <option value="0.03">Perros (3% peso corporal)</option>
+                                    <option value="0.02">Gatos (2% peso corporal)</option>
+                                </optgroup>
+                                <optgroup label="Ganadería">
+                                    <option value="0.025">Bovinos / Vacas (2.5% peso corporal)</option>
+                                    <option value="0.04">Porcinos / Cerdos (4% peso corporal)</option>
+                                </optgroup>
+                                <optgroup label="Aves y Otros">
+                                    <option value="0.12">Pollos / Aves (120g por cada 1kg - aprox. 12%)</option>
+                                    <option value="0.015">Peces (1.5% biomasa total)</option>
+                                </optgroup>
+                            </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Peso del Animal (kg)</label>
+                        <input type="number" id="peso" class="form-control" placeholder="Ej: 25" required>
+                    </div>
+                    <div class="col-12 mt-4 text-center">
+                        <button type="button" onclick="calcularRacion()" class="btn btn-success px-5 fw-bold">
+                            Calcular Ración Diaria
+                        </button>
+                    </div>
+                </form>
+
+                <div id="resultadoSeccion" class="mt-4 d-none">
+                    <div class="alert alert-info border-0 shadow-sm text-center">
+                        <h5 class="mb-1">Resultado Sugerido:</h5>
+                        <h3 class="fw-bold text-success" id="totalRacion">0 kg</h3>
+                        <small class="text-muted">*Consulte siempre con un veterinario de Concentrados Danny.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{general/fragmentos :: footer}"></footer>
+
+    <script>
+       function calcularRacion() {
+            const factor = document.getElementById('especie').value;
+            const peso = document.getElementById('peso').value;
+            const resultadoSeccion = document.getElementById('resultadoSeccion');
+            const totalRacion = document.getElementById('totalRacion');
+
+            if (factor && peso && peso > 0) {
+                const total = factor * peso;
+
+                // Si el resultado es muy pequeño (menos de 1kg), mostrarlo en gramos
+                if (total < 1) {
+                    const gramos = (total * 1000).toFixed(0);
+                    totalRacion.innerText = gramos + " gramos al día";
+                } else {
+                    totalRacion.innerText = total.toFixed(2) + " kg al día";
+                }
+
+                resultadoSeccion.classList.remove('d-none');
+            } else {
+                alert("Por favor ingrese un peso válido.");
+            }
+        }
+    </script>
+</body>
+</html>
