@@ -2,16 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-    <head th:replace="~{general/fragmentos :: head}"/>
+    <head th:replace="~{general/fragmentos :: head}">
+        <title>Ingreso - Concentrados Danny</title>
+    </head>
     <body>
-        <header th:replace="~{general/fragmentos :: header}"/>
+        <header th:replace="~{general/fragmentos :: header}"></header>
         
         <div class="container"> 
             <div class="row my-5">
                 <div class="col-md-6 offset-md-3 col-lg-4 offset-lg-4">
                     <div class="card shadow border-0"> 
                         <div class="card-header bg-success text-white text-center p-3">
-                            <h2 class="mb-0">[[#{login.login}]]</h2>
+                            <h2 class="mb-0" th:text="#{login.login}">Ingresar</h2>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" th:action="@{/login}">
@@ -22,7 +24,7 @@
                                     </label>
                                     <div class="col-md-11 my-auto">
                                         <input class="form-control" id="username" type="text" name="username" 
-                                               th:placeholder="#{login.username}" required autofocus/>
+                                               th:placeholder="#{login.username}" required="required" autofocus="autofocus"/>
                                     </div>
                                 </div>
                                 
@@ -32,7 +34,7 @@
                                     </label>
                                     <div class="col-md-11 my-auto">
                                         <input class="form-control" id="password" type="password" name="password" 
-                                               th:placeholder="#{login.password}" required/>
+                                               th:placeholder="#{login.password}" required="required"/>
                                     </div>
                                 </div>                            
                                 
@@ -42,7 +44,7 @@
                                     </button>
                                 </div>
 
-                                <hr class="my-4">
+                                <hr class="my-4"/>
 
                                 <div class="d-flex justify-content-between">
                                     <a th:href="@{/registro/nuevo}" class="btn btn-outline-primary btn-sm">
@@ -57,7 +59,7 @@
                     </div>
 
                     <div th:if="${param.error}" class="alert alert-danger mt-3 text-center border-0 shadow-sm" role="alert">
-                        [[#{error.login}]]
+                        <span th:text="#{error.login}">Error en las credenciales</span>
                     </div>
                     
                     <div th:if="${param.logout}" class="alert alert-info mt-3 text-center border-0 shadow-sm" role="alert">
@@ -71,6 +73,6 @@
             </div>
         </div>
 
-        <footer th:replace="~{general/fragmentos :: footer}"/>
+        <footer th:replace="~{general/fragmentos :: footer}"></footer>
     </body>
 </html>

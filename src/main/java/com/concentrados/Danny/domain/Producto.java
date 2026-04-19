@@ -31,6 +31,13 @@ public class Producto implements Serializable {
 
 @DateTimeFormat(pattern = "yyyy-MM-dd")
 private LocalDate fechaVencimiento; 
+// Agrega esto a tu clase Producto.java
+public Producto() {
+}
+
+public Producto(Long idProducto) {
+    this.idProducto = idProducto;
+}
     
 
 }

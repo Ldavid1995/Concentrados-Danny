@@ -1,10 +1,8 @@
 package com.concentrados.Danny.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,28 +17,27 @@ public class SecurityConfig {
 
     public SecurityConfig() {
         System.out.println("************************************************");
-        System.out.println("¡¡¡EL SECURITY CONFIG SE ESTÁ CARGANDO!!!");
+        System.out.println("¡¡¡EL SECURITY CONFIG SE ESTÁ CARGANDO ACTUALIZADO!!!");
         System.out.println("************************************************");
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Deshabilitamos CSRF para facilitar las pruebas locales
-            .authorizeHttpRequests(requests -> requests
-                // 1. Recursos estáticos primero
-                .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
-                // 2. Rutas críticas del proyecto
-                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/index")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/producto/**")).permitAll() 
-                .requestMatchers(new AntPathRequestMatcher("/registro/**")).permitAll()
-                .requestMatchers("/producto/calculadora", "/producto/listado/**").permitAll()
-
-                .anyRequest().permitAll()
+            .csrf(csrf -> csrf.disable()) 
+            .authorizeHttpRequests(auth -> auth
+                // 1. Recursos estáticos
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                
+                // 2. Rutas públicas de navegación y productos
+                .requestMatchers("/", "/index", "/login", "/registro/**").permitAll()
+                .requestMatchers("/producto/**", "/producto/listado/**", "/producto/calculadora").permitAll()
+                
+                // 3. RUTA CLAVE: Permitir acciones del carrito para que no den error 403
+                .requestMatchers("/carrito/**").permitAll()
+                
+                // 4. Cualquier otra ruta requiere autenticación (Historial, Perfil, etc.)
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
@@ -60,22 +57,16 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // Nota: Útil para desarrollo, pero en producción usar BCryptPasswordEncoder
         return NoOpPasswordEncoder.getInstance();
     }
 
     @Bean
-    public org.springframework.security.authentication.dao.DaoAuthenticationProvider authenticationProvider(
+    public DaoAuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        var authProvider = new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
-    }
-
-    @Autowired
-    public void configurerGlobal(AuthenticationManagerBuilder build,
-            @Lazy PasswordEncoder passwordEncoder,
-            @Lazy UserDetailsService userDetailsService) throws Exception {
-        build.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 }

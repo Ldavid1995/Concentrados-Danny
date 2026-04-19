@@ -6,9 +6,9 @@
     
     <header th:replace="~{general/fragmentos :: header}"></header>
 
-    <div class="container">
+    <div class="container mt-4 mb-5">
         <div class="card shadow-sm border-0">
-            <div class="card-header py-3">
+            <div class="card-header py-3 bg-success text-white">
                 <h4 class="mb-0"><i class="fas fa-store me-2"></i>Nuestros Concentrados</h4>
             </div>
             
@@ -16,7 +16,7 @@
                 
                 <div th:if="${especieSeleccionada == null or especieSeleccionada == ''}">
                     <div class="text-center mb-4">
-                        <h5 class="especie-titulo">Seleccione una especie para ver los productos</h5>
+                        <h5 class="text-muted">Seleccione una especie para ver los productos</h5>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-4" th:each="esp : ${ {'Perros', 'Gatos', 'Peces', 'Porcinos', 'Bovinos', 'Aves', 'Pollos(Venta Unidad)'} }">
@@ -36,7 +36,7 @@
                                 <input type="text" name="keyword" th:value="${keyword}" 
                                        class="form-control me-2" 
                                        placeholder="Buscar por nombre o marca..." required>
-                                <button type="submit" class="btn btn-outline-success border-2">
+                                <button type="submit" class="btn btn-outline-success">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <a th:href="@{/producto/listado(especie=${especieSeleccionada})}" class="btn btn-outline-secondary ms-1" title="Limpiar">
@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="especie-titulo mb-0">Listado: <span class="badge bg-success px-3">[[${especieSeleccionada}]]</span></h5>
+                        <h5 class="mb-0">Listado: <span class="badge bg-success px-3" th:text="${especieSeleccionada}">Especie</span></h5>
                         <a class="btn btn-link text-decoration-none text-secondary" th:href="@{/producto/listado}">
                             <i class="fas fa-undo-alt me-1"></i> Cambiar Especie
                         </a>
@@ -64,7 +64,7 @@
 
                     <div class="table-responsive rounded shadow-sm">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-success">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
@@ -76,26 +76,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="producto, contador : ${productos}" 
-                                    th:classappend="${producto.existencias < 10} ? 'stock-bajo' : ''">
+                                <tr th:each="producto, contador : ${productos}">
                                     <td th:text="${contador.count}">1</td>
                                     <td class="fw-bold" th:text="${producto.nombre}">Nombre</td>
                                     <td th:text="${producto.marca}">Marca</td>
-                                    <td class="fw-bold text-success">₡[[${#numbers.formatDecimal(producto.precio, 1, 'POINT', 0, 'COMMA')}]]</td>
-                                    <td th:classappend="${producto.existencias < 10} ? 'text-danger fw-bold' : ''">
-                                        [[${producto.existencias}]]
+                                    <td class="fw-bold text-success">
+                                        ₡[[${#numbers.formatDecimal(producto.precio, 1, 'COMMA', 0, 'POINT')}]]
+                                    </td>
+                                    <td>
+                                        <span th:text="${producto.existencias}" 
+                                              th:class="${producto.existencias < 10} ? 'text-danger fw-bold' : ''">0</span>
                                     </td>
                                     <td class="text-center">
                                         <span th:if="${producto.fechaVencimiento != null}" 
                                               th:text="${producto.fechaVencimiento}" 
-                                              class="badge bg-info"></span>
+                                              class="badge bg-info text-dark"></span>
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group shadow-sm">
-                                            <a th:href="@{/deseos/carrito/agregar/{id}(id=${producto.idProducto}, redirect='/producto/listado?especie=' + ${especieSeleccionada})}" 
-                                               class="btn btn-success btn-sm"><i class="fas fa-cart-plus"></i></a>
-                                            <a th:href="@{/deseos/agregar/{id}(id=${producto.idProducto}, redirect='/producto/listado?especie=' + ${especieSeleccionada})}" 
-                                               class="btn btn-outline-danger btn-sm"><i class="far fa-heart"></i></a>
+                                            <a th:href="@{/carrito/agregar/{id}(id=${producto.idProducto})}" 
+                                               class="btn btn-success btn-sm">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </a>
+                                            <a th:href="@{/deseos/agregar/{id}(id=${producto.idProducto})}" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="far fa-heart"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

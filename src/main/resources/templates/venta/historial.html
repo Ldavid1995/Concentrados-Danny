@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{general/fragmentos :: head}"></head>
+<body>
+    <header th:replace="~{general/fragmentos :: header}"></header>
+
+    <div class="container my-5">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Mis Compras Realizadas
+                </h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    ¡Compra procesada con éxito! Gracias por confiar en <strong>Concentrados Danny</strong>.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div class="table-responsive" th:if="${ventas != null and !ventas.empty}">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">Orden #</th>
+                                <th>Fecha de Compra</th>
+                                <th class="text-end">Monto Total</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="venta : ${ventas}">
+                                <td class="text-center fw-bold" th:text="${venta.idVenta}">1</td>
+                                <td th:text="${#dates.format(venta.fecha, 'dd/MM/yyyy hh:mm a')}">19/04/2026</td>
+                                <td class="text-end fw-bold text-success">
+                                    ₡[[${#numbers.formatDecimal(venta.total, 1, 'POINT', 2, 'COMMA')}]]
+                                </td>
+                                <td class="text-center">
+                                    <a th:href="@{/venta/detalle/{id}(id=${venta.idVenta})}" 
+                                       class="btn btn-outline-success btn-sm shadow-sm">
+                                        <i class="fas fa-eye me-1"></i> Ver Detalle
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${ventas == null or ventas.empty}" class="text-center py-5">
+                    <i class="fas fa-shopping-basket fa-3x text-muted mb-3"></i>
+                    <p class="lead text-muted">Aún no has realizado ninguna compra.</p>
+                    <a th:href="@{/producto/listado}" class="btn btn-success">Ir a la Tienda</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{general/fragmentos :: footer}"></footer>
+</body>
+</html>
