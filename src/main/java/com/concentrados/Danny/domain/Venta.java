@@ -35,4 +35,11 @@ public class Venta implements Serializable {
         this.total = total;
         this.fecha = new Date();
     }
+    
+    @PrePersist
+    public void prePersist() {
+        if (this.fecha == null) {
+            this.fecha = new Date();
+        }
+    }
 }

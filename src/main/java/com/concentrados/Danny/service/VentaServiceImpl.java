@@ -1,4 +1,4 @@
-package com.concentrados.Danny.service.impl;
+package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.repository.VentaRepository;
 import com.concentrados.Danny.repository.VentaDetalleRepository;
@@ -10,6 +10,7 @@ import com.concentrados.Danny.domain.Venta;
 import com.concentrados.Danny.domain.VentaDetalle;
 import com.concentrados.Danny.service.UsuarioService;
 import com.concentrados.Danny.service.VentaService;
+import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,15 +35,27 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
 @Transactional
-public void save(List<Item> lista) {
+public Venta save(List<Item> lista) {
+    if (lista == null || lista.isEmpty()) {
+        throw new RuntimeException("El carrito está vacío para procesar la compra.");
+    }
+
     // 1. Obtener el usuario autenticado
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    String username = ((UserDetails) principal).getUsername();
+    if (!(principal instanceof UserDetails userDetails)) {
+        throw new RuntimeException("Debe iniciar sesión para completar la compra.");
+    }
+
+    String username = userDetails.getUsername();
     Usuario usuario = usuarioService.getUsuarioPorUsername(username);
+    if (usuario == null) {
+        throw new RuntimeException("No se encontró el usuario autenticado.");
+    }
 
     // 2. Crear la venta principal
     Venta venta = new Venta();
     venta.setIdUsuario(usuario.getIdUsuario().longValue());
+    venta.setFecha(new Date());
     
     double total = 0;
     
@@ -60,22 +73,35 @@ public void save(List<Item> lista) {
     // 4. Guardar los detalles
     for (Object obj : lista) {
         if (obj instanceof Item item) {
+            Producto producto = productoRepository.findById(item.getIdProducto()).orElse(null);
+            if (producto == null) {
+                throw new RuntimeException("Producto no encontrado (ID: " + item.getIdProducto() + ").");
+            }
+
+            if (item.getCantidad() <= 0) {
+                throw new RuntimeException("Cantidad inválida para el producto: " + producto.getNombre());
+            }
+
+            if (item.getCantidad() > producto.getExistencias()) {
+                throw new RuntimeException(
+                        "Stock insuficiente para '" + producto.getNombre() + "'. Disponible: "
+                                + producto.getExistencias() + ", solicitado: " + item.getCantidad());
+            }
+
             VentaDetalle detalle = new VentaDetalle();
             detalle.setIdVenta(venta.getIdVenta());
             detalle.setIdProducto(item.getIdProducto());
             detalle.setPrecio(item.getPrecio());
             detalle.setCantidad(item.getCantidad());
             
-            this.saveDetalle(detalle); 
+            this.saveDetalle(detalle);
 
             // Actualizar existencias en la base de datos de Danny
-            Producto producto = productoRepository.findById(item.getIdProducto()).orElse(null);
-            if (producto != null) {
-                producto.setExistencias(producto.getExistencias() - item.getCantidad());
-                productoRepository.save(producto);
-            }
+            producto.setExistencias(producto.getExistencias() - item.getCantidad());
+            productoRepository.save(producto);
         }
     }
+    return venta;
 }
 
     @Override
@@ -92,8 +118,9 @@ public void save(List<Item> lista) {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Venta> getVentasPorUsuario(Long idUsuario) {
+        repararFechasNulas();
         return ventaRepository.findByIdUsuario(idUsuario);
     }
 
@@ -104,8 +131,14 @@ public void save(List<Item> lista) {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Venta getVenta(Long idVenta) {
+        repararFechasNulas();
         return ventaRepository.findById(idVenta).orElse(null);
+    }
+
+    @Transactional
+    protected void repararFechasNulas() {
+        ventaRepository.repararFechasNulas();
     }
 }

@@ -17,5 +17,5 @@ public interface VentaService {
     public Venta getVenta(Long idVenta);
     public List<VentaDetalle> getDetallesPorVenta(Long idVenta);
 
-    public void save(List<Item> lista);
+    public Venta save(List<Item> lista);
 }

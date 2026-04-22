@@ -4,12 +4,16 @@ import com.concentrados.Danny.domain.Item;
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.service.ItemService;
 import com.concentrados.Danny.service.ProductoService;
+import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/carrito") // Todas las rutas empezarán con /carrito
@@ -17,9 +21,6 @@ public class ItemController {
 
     @Autowired
     private ItemService itemService;
-
-    @Autowired
-    private ProductoService productoService;
 
     // 1. Ver el contenido del carrito
     @GetMapping("/listado")
@@ -39,16 +40,14 @@ public class ItemController {
 
     // 2. Agregar un producto al carrito (EL MÁS IMPORTANTE)
     @GetMapping("/agregar/{idProducto}")
-public String agregarItem(Producto producto) {
-    // Buscamos la info completa (precio, nombre) del producto
-    producto = productoService.getProducto(producto); 
-    if (producto != null) {
-        Item item = new Item(producto);
-        item.setCantidad(1); // <--- IMPORTANTE: Que no inicie en 0
-        itemService.save(item); // Esto lo mete en la sesión
+    public String agregarItem(@PathVariable Long idProducto,
+            @RequestParam(value = "redirect", required = false) String redirect,
+            HttpSession session) {
+        Map<Long, Integer> carrito = obtenerCarrito(session);
+        carrito.put(idProducto, carrito.getOrDefault(idProducto, 0) + 1);
+        session.setAttribute("carrito", carrito);
+        return redireccionSegura(redirect);
     }
-    return "redirect:/"; 
-}
 
     // 3. Eliminar un producto del carrito
     @GetMapping("/eliminar/{idProducto}")
@@ -63,5 +62,26 @@ public String agregarItem(Producto producto) {
         item = itemService.get(item);
         model.addAttribute("item", item);
         return "carrito/modificar";
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Long, Integer> obtenerCarrito(HttpSession session) {
+        Object valor = session.getAttribute("carrito");
+        if (valor instanceof Map) {
+            return (Map<Long, Integer>) valor;
+        }
+        Map<Long, Integer> nuevo = new HashMap<>();
+        session.setAttribute("carrito", nuevo);
+        return nuevo;
+    }
+
+    private String redireccionSegura(String redirect) {
+        if (redirect == null || redirect.isBlank()) {
+            return "redirect:/producto/listado";
+        }
+        if (!redirect.startsWith("/") || redirect.startsWith("//")) {
+            return "redirect:/producto/listado";
+        }
+        return "redirect:" + redirect;
     }
 }

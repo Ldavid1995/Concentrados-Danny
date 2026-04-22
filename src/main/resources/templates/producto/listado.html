@@ -94,7 +94,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group shadow-sm">
-                                            <a th:href="@{/carrito/agregar/{id}(id=${producto.idProducto})}" 
+                                            <a th:href="@{/carrito/agregar/{idProducto}(idProducto=${producto.idProducto},redirect=${currentUrl})}"
                                                class="btn btn-success btn-sm">
                                                 <i class="fas fa-cart-plus"></i>
                                             </a>
