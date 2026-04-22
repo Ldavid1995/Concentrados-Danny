@@ -31,12 +31,12 @@ public class SecurityConfig {
                 
                 // 2. Rutas públicas de navegación y productos
                 .requestMatchers("/", "/index", "/login", "/registro/**").permitAll()
-                .requestMatchers("/producto/**", "/producto/listado/**", "/producto/calculadora").permitAll()
-                
-                // 3. RUTA CLAVE: Permitir acciones del carrito para que no den error 403
+                .requestMatchers( "/producto/listado/**", "/producto/calculadora").permitAll()
                 .requestMatchers("/carrito/**").permitAll()
-                
-                // 4. Cualquier otra ruta requiere autenticación (Historial, Perfil, etc.)
+                    
+                .requestMatchers("/producto/nuevo", "/producto/guardar", "/producto/modificar/**", "/producto/eliminar/**").hasAuthority("ADMIN")
+                .requestMatchers("/producto/**").permitAll()
+                    
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
