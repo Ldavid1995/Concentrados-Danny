@@ -34,80 +34,67 @@ public class VentaServiceImpl implements VentaService {
     private UsuarioService usuarioService;
 
     @Override
-@Transactional
-public Venta save(List<Item> lista) {
-    if (lista == null || lista.isEmpty()) {
-        throw new RuntimeException("El carrito está vacío para procesar la compra.");
-    }
+    @Transactional
+    public Venta save(List<Item> lista) {
+        if (lista == null || lista.isEmpty()) {
+            throw new RuntimeException("El carrito está vacío.");
+        }
 
-    // 1. Obtener el usuario autenticado
-    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if (!(principal instanceof UserDetails userDetails)) {
-        throw new RuntimeException("Debe iniciar sesión para completar la compra.");
-    }
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof UserDetails userDetails)) {
+            throw new RuntimeException("Debe iniciar sesión.");
+        }
 
-    String username = userDetails.getUsername();
-    Usuario usuario = usuarioService.getUsuarioPorUsername(username);
-    if (usuario == null) {
-        throw new RuntimeException("No se encontró el usuario autenticado.");
-    }
-
-    // 2. Crear la venta principal
-    Venta venta = new Venta();
-    venta.setIdUsuario(usuario.getIdUsuario().longValue());
-    venta.setFecha(new Date());
-    
-    double total = 0;
-    
-    // 3. Cálculo del total con validación de tipo para evitar el ClassCastException
-    for (Object obj : lista) {
-        if (obj instanceof Item item) {
+        Usuario usuario = usuarioService.getUsuarioPorUsername(userDetails.getUsername());
+        
+        Venta venta = new Venta();
+        venta.setIdUsuario(usuario.getIdUsuario().longValue());
+        venta.setFecha(new Date());
+        
+        double total = 0;
+        for (Item item : lista) {
             total += item.getPrecio() * item.getCantidad();
         }
-    }
-    venta.setTotal(total);
-    
-    // Guardar la venta y recuperar el objeto con ID generado
-    venta = this.saveVenta(venta); 
+        venta.setTotal(total);
+        venta = ventaRepository.save(venta); 
 
-    // 4. Guardar los detalles
-    for (Object obj : lista) {
-        if (obj instanceof Item item) {
+        for (Item item : lista) {
             Producto producto = productoRepository.findById(item.getIdProducto()).orElse(null);
-            if (producto == null) {
-                throw new RuntimeException("Producto no encontrado (ID: " + item.getIdProducto() + ").");
-            }
-
-            if (item.getCantidad() <= 0) {
-                throw new RuntimeException("Cantidad inválida para el producto: " + producto.getNombre());
-            }
-
-            if (item.getCantidad() > producto.getExistencias()) {
-                throw new RuntimeException(
-                        "Stock insuficiente para '" + producto.getNombre() + "'. Disponible: "
-                                + producto.getExistencias() + ", solicitado: " + item.getCantidad());
-            }
-
+            
             VentaDetalle detalle = new VentaDetalle();
             detalle.setIdVenta(venta.getIdVenta());
             detalle.setIdProducto(item.getIdProducto());
             detalle.setPrecio(item.getPrecio());
             detalle.setCantidad(item.getCantidad());
-            
-            this.saveDetalle(detalle);
+            ventaDetalleRepository.save(detalle);
 
-            // Actualizar existencias en la base de datos de Danny
             producto.setExistencias(producto.getExistencias() - item.getCantidad());
             productoRepository.save(producto);
         }
+        return venta;
     }
-    return venta;
-}
+
+    // --- MÉTODOS PARA EL REPORTE MENSUAL (HU-06) ---
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Venta> obtenerVentasPorMes(int mes, int anno) {
+        // Este es el que te faltaba y por eso Maven fallaba
+        return ventaRepository.findVentasByMes(mes, anno);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Double calcularTotalVentasMensuales(int mes, int anno) {
+        List<Venta> ventas = ventaRepository.findVentasByMes(mes, anno);
+        return ventas.stream().mapToDouble(Venta::getTotal).sum();
+    }
+
+    // --- OTROS MÉTODOS DE LA INTERFAZ ---
 
     @Override
     @Transactional
     public Venta saveVenta(Venta venta) {
-        // Cambiado de void a Venta para cumplir con la Interfaz
         return ventaRepository.save(venta);
     }
 
@@ -118,9 +105,8 @@ public Venta save(List<Item> lista) {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Venta> getVentasPorUsuario(Long idUsuario) {
-        repararFechasNulas();
         return ventaRepository.findByIdUsuario(idUsuario);
     }
 
@@ -131,14 +117,8 @@ public Venta save(List<Item> lista) {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Venta getVenta(Long idVenta) {
-        repararFechasNulas();
         return ventaRepository.findById(idVenta).orElse(null);
-    }
-
-    @Transactional
-    protected void repararFechasNulas() {
-        ventaRepository.repararFechasNulas();
     }
 }

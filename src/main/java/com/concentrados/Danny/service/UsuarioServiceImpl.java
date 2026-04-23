@@ -1,10 +1,10 @@
-package com.concentrados.Danny.service.impl;
+package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.repository.UsuarioRepository; 
 import com.concentrados.Danny.repository.RolRepository;     
 import com.concentrados.Danny.domain.Usuario;
 import com.concentrados.Danny.domain.Rol;
-import com.concentrados.Danny.service.UsuarioService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,30 +13,52 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository; // Antes usuarioDao
+    private UsuarioRepository usuarioRepository;
     
     @Autowired
-    private RolRepository rolRepository;         // Antes rolDao
+    private RolRepository rolRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usuario> getUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Usuario getUsuario(Usuario usuario) {
+        return usuarioRepository.findById(usuario.getIdUsuario()).orElse(null);
+    }
 
     @Override
     @Transactional
     public void save(Usuario usuario, boolean crearRolUser) {
-        // 1. Guardamos el usuario (Spring Data JPA retorna el objeto con su nuevo ID)
         usuario = usuarioRepository.save(usuario);
-        
-        // 2. Si es un registro nuevo, le asignamos el rol de CLIENTE
         if (crearRolUser) {
-            Rol rol = new Rol();
-            rol.setNombre("ROLE_USER");
-            rol.setIdUsuario(usuario.getIdUsuario());
-            rolRepository.save(rol);
+            this.asignarRol(usuario.getIdUsuario(), "ROLE_USER");
         }
+    }
+
+    @Override
+    @Transactional
+    public void asignarRol(Integer idUsuario, String nombreRol) {
+        // Opcional: Podrías verificar si ya existe el rol para ese usuario
+        // para evitar insertar el mismo rol dos veces.
+        Rol rol = new Rol();
+        rol.setNombre(nombreRol);
+        rol.setIdUsuario(idUsuario);
+        rolRepository.save(rol);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Usuario usuario) {
+        usuarioRepository.delete(usuario);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Usuario getUsuarioPorUsername(String username) {
-
         return usuarioRepository.findByUsernameAndActivoTrue(username).orElse(null);
     }
 }

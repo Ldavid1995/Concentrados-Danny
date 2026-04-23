@@ -35,7 +35,7 @@ public class ItemController {
         }
         model.addAttribute("carritoTotal", carritoTotal);
         
-        return "carrito/listado"; // Asegúrate de tener esta carpeta y archivo .html
+        return "carrito/lista"; // Asegúrate de tener esta carpeta y archivo .html
     }
 
     // 2. Agregar un producto al carrito (EL MÁS IMPORTANTE)

@@ -10,4 +10,5 @@ public interface ItemService {
     public void delete(Item item);
     public Item get(Item item);
     public void update(Item item);
+    public double getTotal();
 }

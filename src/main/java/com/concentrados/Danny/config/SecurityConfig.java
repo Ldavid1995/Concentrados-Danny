@@ -26,17 +26,25 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-                // 1. Recursos estáticos
+                // 1. Recursos estáticos (Acceso total)
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 
-                // 2. Rutas públicas de navegación y productos
-                .requestMatchers("/", "/index", "/login", "/registro/**").permitAll()
-                .requestMatchers( "/producto/listado/**", "/producto/calculadora").permitAll()
+                // 2. Rutas Públicas (Index, Login y Registro básico)
+                .requestMatchers("/", "/index", "/login", "/registro/nuevo", "/registro/crear").permitAll()
+                .requestMatchers("/producto/listado/**", "/producto/calculadora").permitAll()
                 .requestMatchers("/carrito/**").permitAll()
-                    
-                .requestMatchers("/producto/nuevo", "/producto/guardar", "/producto/modificar/**", "/producto/eliminar/**").hasAuthority("ADMIN")
-                .requestMatchers("/producto/**").permitAll()
-                    
+
+                // 3. Permisos para VENDEDOR y ADMIN (Gestión de ventas y stock)
+                .requestMatchers("/reporte/**").hasAnyRole("ADMIN", "VENDEDOR")
+                .requestMatchers("/producto/nuevo", "/producto/guardar", "/producto/modificar/**").hasAnyRole("ADMIN", "VENDEDOR")
+                
+                // 4. Permisos EXCLUSIVOS de ADMIN (Seguridad y borrado)
+                .requestMatchers("/registro/usuarios", "/registro/asignarRol").hasAuthority("ADMIN")
+                .requestMatchers("/producto/eliminar/**").hasAuthority("ADMIN")
+                
+                // 5. Cualquier otra ruta de productos requiere estar logueado
+                .requestMatchers("/producto/**").authenticated()
+                
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -57,7 +65,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Nota: Útil para desarrollo, pero en producción usar BCryptPasswordEncoder
+        // Mantenemos NoOp para tus pruebas con claves en texto plano (123, 456)
         return NoOpPasswordEncoder.getInstance();
     }
 

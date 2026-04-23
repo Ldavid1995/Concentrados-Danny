@@ -3,6 +3,8 @@ package com.concentrados.Danny.controller;
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.service.ProductoService;
 import com.concentrados.Danny.service.FichaService;
+import com.concentrados.Danny.service.ProductoPdfService;
+import com.lowagie.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
@@ -16,7 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import com.concentrados.Danny.service.ProductoPdfService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -32,8 +33,20 @@ public class ProductoController {
     @Autowired
     private FichaService fichaService;
 
+    // --- NUEVO MÉTODO PARA AGREGAR PRODUCTOS ---
+    @GetMapping("/nuevo")
+    public String nuevoProducto(Producto producto, Model model) {
+        // Simplemente retornamos la vista de modificación, 
+        // pero con un objeto producto vacío
+        return "/producto/modifica";
+    }
+
     @GetMapping("/listado")
-    public String listarProductos(@Param("keyword") String keyword, @Param("especie") String especie, Model model, HttpSession session, HttpServletRequest request) {
+    public String listarProductos(@Param("keyword") String keyword, 
+                                @Param("especie") String especie, 
+                                Model model, 
+                                HttpSession session, 
+                                HttpServletRequest request) {
         List<Producto> productos;
 
         if (keyword != null && !keyword.isEmpty()) {
@@ -49,11 +62,15 @@ public class ProductoController {
                     .collect(Collectors.toList());
         }
 
+        Object carritoSession = session.getAttribute("carrito");
+        model.addAttribute("itemsCarrito", carritoSession); 
+
         model.addAttribute("productos", productos);
         model.addAttribute("keyword", keyword);
         model.addAttribute("especieSeleccionada", especie);
         model.addAttribute("wishlistIds", obtenerWishlist(session));
         model.addAttribute("currentUrl", construirUrlActual(request));
+        
         return "producto/listado";
     }
 
@@ -69,8 +86,11 @@ public class ProductoController {
         }
 
         productoService.save(producto);
-        String especieUrl = (producto.getEspecie() != null) ? producto.getEspecie() : "";
-        return "redirect:/producto/listado?especie=" + especieUrl;
+        // Redirigir al listado general si no hay especie, para evitar errores de URL
+        String especieUrl = (producto.getEspecie() != null && !producto.getEspecie().isEmpty()) 
+                            ? "?especie=" + producto.getEspecie() : "";
+        
+        return "redirect:/producto/listado" + especieUrl;
     }
 
     @GetMapping("/eliminar/{idProducto}")
@@ -108,21 +128,20 @@ public class ProductoController {
         return "producto/cobertura"; 
     }
     
-
     @GetMapping("/calculadora")
     public String mostrarCalculadora(Model model) {
         return "producto/calculadora"; 
     }
 
     @GetMapping("/exportar-pdf")
-    public void exportarAPdf(HttpServletResponse response) throws IOException {
+    public void exportarAPdf(HttpServletResponse response) throws IOException, DocumentException {
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Catalogo_Danny.pdf");
+        response.setHeader("Content-Disposition", "inline; filename=productos.pdf");
 
-        List<Producto> productos = productoService.obtenerTodos(); 
+        List<Producto> listaProductos = productoService.obtenerTodos(); 
 
         ProductoPdfService exporter = new ProductoPdfService();
-        exporter.exportar(response, productos);
+        exporter.exportar(response, listaProductos);
     }
 
     @SuppressWarnings("unchecked")

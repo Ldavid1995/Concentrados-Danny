@@ -4,7 +4,6 @@ import com.concentrados.Danny.domain.Item;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +11,10 @@ import org.springframework.stereotype.Service;
 public class ItemServiceImpl implements ItemService {
 
     @Autowired
-    private HttpSession session; // Inyectamos la sesión para persistencia
+    private HttpSession session;
 
     @Override
     public List<Item> gets() {
-        // Obtenemos la lista directamente de la sesión
         List<Item> listaItems = (List<Item>) session.getAttribute("listaItems");
         if (listaItems == null) {
             listaItems = new ArrayList<>();
@@ -26,37 +24,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-public void save(Item item) {
-    boolean existe = false;
-    List<Item> lista;
+    public void save(Item item) {
+        boolean existe = false;
+        List<Item> lista = gets(); // Usamos gets() para asegurar consistencia
 
-    // 1. Recuperamos el objeto de la sesión
-    Object carritoSesion = session.getAttribute("carrito");
-
-    // 2. Blindaje contra el ClassCastException
-    if (carritoSesion instanceof List) {
-        lista = (List<Item>) carritoSesion;
-    } else {
-        // Si es null o es un HashMap (el error), inicializamos una lista nueva
-        lista = new ArrayList<>();
-    }
-
-    // 3. Lógica de agregar o incrementar cantidad
-    for (Item i : lista) {
-        if (i.getIdProducto().equals(item.getIdProducto())) {
-            i.setCantidad(i.getCantidad() + item.getCantidad());
-            existe = true;
-            break;
+        for (Item i : lista) {
+            if (i.getIdProducto().equals(item.getIdProducto())) {
+                i.setCantidad(i.getCantidad() + item.getCantidad());
+                existe = true;
+                break;
+            }
         }
-    }
 
-    if (!existe) {
-        lista.add(item);
-    }
+        if (!existe) {
+            lista.add(item);
+        }
 
-    // 4. Guardamos de vuelta la LISTA en la sesión
-    session.setAttribute("carrito", lista);
-}
+        session.setAttribute("listaItems", lista);
+    }
 
     @Override
     public void delete(Item item) {
@@ -86,5 +71,18 @@ public void save(Item item) {
             }
         }
         session.setAttribute("listaItems", listaItems);
+    }
+
+    /**
+     * Implementación para la HU-24: Calcula el total de la proforma
+     */
+    @Override
+    public double getTotal() {
+        double total = 0;
+        List<Item> listaItems = gets();
+        for (Item i : listaItems) {
+            total += (i.getPrecio() * i.getCantidad());
+        }
+        return total;
     }
 }

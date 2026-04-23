@@ -18,4 +18,6 @@ public interface VentaService {
     public List<VentaDetalle> getDetallesPorVenta(Long idVenta);
 
     public Venta save(List<Item> lista);
+    List<Venta> obtenerVentasPorMes(int mes, int anno);
+    Double calcularTotalVentasMensuales(int mes, int anno);
 }

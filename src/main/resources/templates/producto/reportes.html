@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Reportes - Concentrados Danny</title>
     <meta charset="UTF-8"/>
@@ -9,19 +10,20 @@
         .navbar { background-color: #28a745 !important; }
         .card-header { background-color: #e9f5ec; color: #155724; border-bottom: 2px solid #28a745; }
         .badge { font-size: 0.95rem; padding: 0.5em 0.8em; }
+        .card-ventas { border-left: 5px solid #0d6efd; }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/producto/listado">Concentrados Danny - Reportes</a>
+            <a class="navbar-brand fw-bold" th:href="@{/producto/listado}">Concentrados Danny - Reportes</a>
         </div>
     </nav>
 
     <div class="container">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm mb-5">
             <div class="card-header text-center">
-                <h3><i class="fas fa-chart-pie me-2"></i>Análisis de Inventario </h3>
+                <h3><i class="fas fa-chart-pie me-2"></i>Análisis de Inventario y Ventas</h3>
             </div>
             <div class="card-body">
                 
@@ -32,9 +34,27 @@
                     </div>
                 </div>
 
-                <div class="alert alert-success text-center mb-4">
-                    <h4 class="mb-0">Valor Total del Inventario: </h4>
-                    <h2 class="display-6 fw-bold">₡[[${totalDinero}]]</h2>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="alert alert-success text-center h-100 d-flex flex-column justify-content-center">
+                            <h4 class="mb-0">Valor Total del Inventario:</h4>
+                            <h2 class="display-6 fw-bold">₡[[${totalDinero}]]</h2>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4" sec:authorize="hasAuthority('ADMIN')">
+                        <div class="card card-ventas h-100 shadow-sm">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h4 class="text-primary"><i class="fas fa-hand-holding-usd me-2"></i>Cierre Mensual</h4>
+                                <p class="text-muted small">Generar reporte de ingresos detallado por mes</p>
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/reporte/ventas-mensuales(mes=4)}" class="btn btn-primary">
+                                        <i class="fas fa-file-invoice-dollar me-2"></i>Ver Ventas de Abril
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <hr>
@@ -64,7 +84,7 @@
                 </table>
                 
                 <div class="text-end mt-4">
-                    <a href="/producto/listado" class="btn btn-secondary">
+                    <a th:href="@{/producto/listado}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Volver al Inventario
                     </a>
                 </div>
