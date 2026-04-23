@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="cotizacion" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d1c0b3b4-1234-5678-90ab-cdef12345678">
+    
+    <parameter name="total" class="java.lang.Double"/>
+    <parameter name="empresa" class="java.lang.String"/>
+    
+    <field name="producto.nombre" class="java.lang.String"/>
+    <field name="producto.precio" class="java.lang.Double"/>
+    <field name="cantidad" class="java.lang.Integer"/>
+
+    <title>
+        <band height="80">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="40" uuid="b1a2c3d4-e5f6-7890-abcd-ef1234567890"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="22" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{empresa}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="0" y="40" width="555" height="30" uuid="c2b3d4e5-f6a7-890b-cdef-1234567890ab"/>
+                <textElement textAlignment="Center">
+                    <font size="14" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[Proforma de Productos]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="30">
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="30" backcolor="#F0F0F0" uuid="d3e4f5a6-b7c8-90d1-e2f3-g4h5i6j7k8l9"/>
+                <graphicElement><pen lineWidth="0.0"/></graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="10" y="0" width="270" height="30" uuid="e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8g9h"/>
+                <textElement verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[PRODUCTO]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="280" y="0" width="100" height="30" uuid="f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8g9h0i"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[PRECIO UNIT.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="380" y="0" width="70" height="30" uuid="g6h7i8j9-k0l1-2m3n-4o5p-6q7r8s9t0u1v"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[CANT.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="450" y="0" width="95" height="30" uuid="h7i8j9k0-l1m2-3n4o-5p6q-7r8s9t0u1v2w"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[SUBTOTAL]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="25">
+            <textField>
+                <reportElement x="10" y="0" width="270" height="20" uuid="i8j9k0l1-m2n3-4o5p-6q7r-8s9t0u1v2w3x"/>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{producto.nombre}]]></textFieldExpression>
+            </textField>
+            <textField pattern="₡#,##0">
+                <reportElement x="280" y="0" width="100" height="20" uuid="j9k0l1m2-n3o4-5p6q-7r8s-9t0u1v2w3x4y"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{producto.precio}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="380" y="0" width="70" height="20" uuid="k0l1m2n3-o4p5-6q7r-8s9t-0u1v2w3x4y5z"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
+            </textField>
+            <textField pattern="₡#,##0">
+                <reportElement x="450" y="0" width="95" height="20" uuid="l1m2n3o4-p5q6-7r8s-9t0u-1v2w3x4y5z6a"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{producto.precio} * $F{cantidad}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <summary>
+        <band height="50">
+            <line>
+                <reportElement x="0" y="5" width="555" height="1" uuid="n3o4p5q6-r7s8-9t0u-v1w2-x3y4z5a6b7c8"/>
+            </line>
+            <staticText>
+                <reportElement x="350" y="10" width="100" height="30" uuid="o4p5q6r7-s8t9-0u1v-w2x3-y4z5a6b7c8d9"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TOTAL:]]></text>
+            </staticText>
+            <textField pattern="₡#,##0">
+                <reportElement x="450" y="10" width="95" height="30" forecolor="#28A745" uuid="p5q6r7s8-t9u0-1v2w-x3y4-z5a6b7c8d9e0"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{total}]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+</jasperReport>

@@ -22,8 +22,6 @@ public class Usuario implements Serializable {
     private String apellidos;
     private String correo;
     
-    // Si en tu script de BD agregaste estas columnas, déjalas. 
-    // Si no las agregaste, coméntalas para evitar errores de Hibernate.
     private String telefono;
     
     @Column(name = "ruta_imagen")

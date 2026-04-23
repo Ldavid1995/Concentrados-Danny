@@ -59,15 +59,16 @@
                     </div>
 
                     <div th:if="${param.error}" class="alert alert-danger mt-3 text-center border-0 shadow-sm" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> 
                         <span th:text="#{error.login}">Error en las credenciales</span>
                     </div>
                     
                     <div th:if="${param.logout}" class="alert alert-info mt-3 text-center border-0 shadow-sm" role="alert">
-                        Has cerrado sesión correctamente.
+                        <i class="fas fa-info-circle"></i> Has cerrado sesión correctamente.
                     </div>
                     
                     <div th:if="${param.registroExitoso}" class="alert alert-success mt-3 text-center border-0 shadow-sm" role="alert">
-                        ¡Registro completado! Ya puedes ingresar.
+                        <i class="fas fa-check-circle"></i> ¡Registro completado! Ya puedes ingresar.
                     </div>
                 </div>
             </div>

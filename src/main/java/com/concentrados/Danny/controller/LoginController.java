@@ -17,7 +17,6 @@ public class LoginController {
     }
     @PostMapping("/login")
     public String procesarLoginSimulado() {
-        // Esto atrapa el POST del formulario y te manda directo al inicio
         return "redirect:/"; 
     }
 }

@@ -23,6 +23,7 @@ public class ReporteController {
 
     @Autowired
     private ProductoService productoService;
+    
     @Autowired
     private VentaService ventaService;
     
@@ -34,37 +35,44 @@ public class ReporteController {
 
     @GetMapping("/principal")
     public String mostrarReportes(Model model) {
-        // Muestra el análisis que ya tienes de stock bajo y valor total
         model.addAttribute("stockMarcas", productoService.obtenerStockPorMarca());
         model.addAttribute("totalDinero", productoService.calcularValorInventario());
         return "producto/reportes"; 
     }
 
-    @GetMapping("/cotizacion")
-    public void generarCotizacion(HttpServletResponse response) throws IOException {
-        // 1. Obtener los datos reales del carrito de Concentrados Danny
-        List<Item> carrito = itemService.gets(); 
+    /**
+     * Exporta la proforma actual del carrito en formato PDF.
+     */
+    @GetMapping("/exportar-proforma")
+public void exportarProforma(HttpServletResponse response) {
+    try {
+        List<Item> carrito = itemService.gets();
         
-        // 2. Validar que el carrito no esté vacío antes de procesar
         if (carrito == null || carrito.isEmpty()) {
             response.sendRedirect("/carrito/listado?error=vacio");
             return;
         }
 
-        // 3. Preparar los parámetros para el Jasper
-        Map<String, Object> datos = new HashMap<>();
-        datos.put("items", carrito); // Lista de productos
-        datos.put("total", itemService.getTotal()); // El cálculo numérico de la proforma
-        datos.put("empresa", "Concentrados Danny");
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename=Proforma_Danny.pdf");
+
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("items", carrito);
+        parametros.put("total", itemService.getTotal());
+        parametros.put("empresa", "Concentrados Danny S.A.");
+
+        reporteService.generarPdf("proforma", parametros, response);
         
-        // 4. Generar el PDF
-        // IMPORTANTE: El nombre "cotizacion" debe ser igual a tu archivo en resources/reportes/cotizacion.jasper
-        reporteService.generarPdf("cotizacion", datos, response);
+        response.flushBuffer();
+
+    } catch (Exception e) {
+        System.err.println("Error al exportar: " + e.getMessage());
     }
+}
+
     @GetMapping("/ventas-mensuales")
     public String reporteMensual(@RequestParam(name="mes", defaultValue="4") int mes, Model model) {
         int annoActual = java.time.Year.now().getValue();
-
         var ventas = ventaService.obtenerVentasPorMes(mes, annoActual);
         Double totalMes = ventaService.calcularTotalVentasMensuales(mes, annoActual);
 
@@ -72,6 +80,6 @@ public class ReporteController {
         model.addAttribute("totalMensual", totalMes);
         model.addAttribute("mesNombre", java.time.Month.of(mes).name());
 
-        return "producto/reporte_ventas"; // Esta será tu nueva vista para el Admin
+        return "producto/reporte_ventas"; 
     }
 }

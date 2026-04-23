@@ -6,13 +6,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Item extends Producto {
-    private int cantidad; // Atributo propio de Item para el carrito
+    private int cantidad; 
 
-    // Constructor vacío (necesario para Spring/Jackson)
     public Item() {
     }
-
-    // Constructor que recibe un Producto (esto arregla el error de compilación)
     public Item(Producto producto) {
         super.setIdProducto(producto.getIdProducto());
         super.setNombre(producto.getNombre());

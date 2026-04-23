@@ -26,7 +26,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void save(Item item) {
         boolean existe = false;
-        List<Item> lista = gets(); // Usamos gets() para asegurar consistencia
+        List<Item> lista = gets(); 
 
         for (Item i : lista) {
             if (i.getIdProducto().equals(item.getIdProducto())) {
@@ -73,9 +73,6 @@ public class ItemServiceImpl implements ItemService {
         session.setAttribute("listaItems", listaItems);
     }
 
-    /**
-     * Implementación para la HU-24: Calcula el total de la proforma
-     */
     @Override
     public double getTotal() {
         double total = 0;

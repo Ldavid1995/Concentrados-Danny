@@ -17,7 +17,7 @@ public class Venta implements Serializable {
     @Column(name="id_venta")
     private Long idVenta;
     
-    @Column(name="id_usuario") // Asegura el mapeo con tu script SQL
+    @Column(name="id_usuario")
     private Long idUsuario;
     
     private Double total;

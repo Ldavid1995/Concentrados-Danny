@@ -1,80 +1,127 @@
--- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
---
--- Host: 127.0.0.1    Database: concentrados_db
--- ------------------------------------------------------
--- Server version	8.0.44
+/*
+   Script de Base de Datos para Concentrados Danny
+   Desarrollado por: Luis David Averruz y Alberto Alfaro Campos
+   Propósito: Gestión de inventarios, usuarios, roles, rutas y ventas.
+*/
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- 1. ADMINISTRACIÓN DEL ENTORNO
+DROP DATABASE IF EXISTS concentrados_db;
+CREATE DATABASE concentrados_db DEFAULT CHARACTER SET utf8mb4;
+USE concentrados_db;
 
---
--- Table structure for table `producto`
---
+-- Limpieza de usuarios (opcional en desarrollo)
+DROP USER IF EXISTS 'danny_admin'@'%';
+CREATE USER 'danny_admin'@'%' IDENTIFIED BY 'Danny_Clave2026.';
+GRANT ALL PRIVILEGES ON concentrados_db.* TO 'danny_admin'@'%';
+FLUSH PRIVILEGES;
 
-DROP TABLE IF EXISTS `producto`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `producto` (
-  `id_producto` bigint NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(255) DEFAULT NULL,
-  `marca` varchar(255) DEFAULT NULL,
-  `especie` varchar(255) DEFAULT NULL,
-  `unidad_medida` varchar(255) DEFAULT NULL,
-  `precio` double NOT NULL,
-  `existencias` int NOT NULL,
-  `ruta_imagen` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id_producto`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- 2. TABLAS DE ESTRUCTURA (CATÁLOGO E INVENTARIO)
 
---
--- Dumping data for table `producto`
---
+CREATE TABLE producto (
+  id_producto BIGINT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(100) NOT NULL,
+  marca VARCHAR(50),
+  especie VARCHAR(50), -- Filtro principal: Perros, Gatos, etc.
+  unidad_medida VARCHAR(20),
+  precio DOUBLE NOT NULL CHECK (precio >= 0),
+  existencias INT NOT NULL CHECK (existencias >= 0),
+  ruta_imagen VARCHAR(1024),
+  ficha_tecnica VARCHAR(255), -- Para el PDF que mencionas en el doc
+  activo BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_producto)
+) ENGINE = InnoDB;
 
-LOCK TABLES `producto` WRITE;
-/*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,'Concentrado Adulto','Dogui','Perros','Saco',12500,20,'https://ejemplo.com/perro.jpg'),(2,'Concentrado Gatitos','Whiskas','Gatos','Saco',8500,15,'https://ejemplo.com/gato.jpg'),(3,'Alimento Tilapia Crecimiento','Aguas','Tilapias','Saco',18000,30,'https://ejemplo.com/tilapia.jpg'),(4,'Concentrado Cerdo Engorde','Cerditex','Cerdos','Saco',22000,10,'https://ejemplo.com/cerdo.jpg'),(5,'Alimento Terneras','Vaquita','Terneras','Saco',19500,5,'https://ejemplo.com/ternera.jpg'),(6,'Pollo de Engorde (Unidad)','Granja Danny','Pollos','Unidad',3500,50,'https://ejemplo.com/pollo.jpg');
-/*!40000 ALTER TABLE `producto` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- 3. TABLAS DE SEGURIDAD (USUARIOS Y ROLES)
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+CREATE TABLE usuario (
+  id_usuario BIGINT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(20) NOT NULL UNIQUE,
+  password VARCHAR(500) NOT NULL, -- Soporte para BCrypt
+  nombre VARCHAR(30) NOT NULL,
+  apellidos VARCHAR(30) NOT NULL,
+  correo VARCHAR(75) UNIQUE,
+  telefono VARCHAR(15),
+  ruta_imagen VARCHAR(1024),
+  activo BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_usuario),
+  INDEX ndx_username (username)
+) ENGINE = InnoDB;
 
--- Crear tabla de usuario
-CREATE TABLE IF NOT EXISTS `usuario` (
-  `id_usuario` INT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(20) NOT NULL,
-  `password` VARCHAR(500) NOT NULL,
-  `nombre` VARCHAR(30) NOT NULL,
-  `apellidos` VARCHAR(30) NOT NULL,
-  `correo` VARCHAR(50) DEFAULT NULL,
-  `telefono` VARCHAR(15) DEFAULT NULL,
-  `ruta_imagen` VARCHAR(1024) DEFAULT NULL,
-  `activo` BOOLEAN DEFAULT TRUE,
-  PRIMARY KEY (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE rol (
+  id_rol INT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(30) NOT NULL, -- ROLE_ADMIN, ROLE_VENDEDOR, ROLE_USER
+  id_usuario BIGINT NOT NULL,
+  PRIMARY KEY (id_rol),
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+) ENGINE = InnoDB;
 
--- Crear tabla de roles
-CREATE TABLE IF NOT EXISTS `rol` (
-  `id_rol` INT NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(30) NOT NULL,
-  `id_usuario` INT NOT NULL,
-  PRIMARY KEY (`id_rol`),
-  FOREIGN KEY (`id_usuario`) REFERENCES `usuario`(`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- 4. TABLAS DE SEGURIDAD DINÁMICA (RUTAS)
 
--- Dump completed on 2026-03-10 23:17:26
+CREATE TABLE ruta (
+  id_ruta INT NOT NULL AUTO_INCREMENT,
+  ruta VARCHAR(255) NOT NULL,
+  id_rol INT DEFAULT NULL,
+  requiere_rol BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY KEY (id_ruta),
+  FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
+) ENGINE = InnoDB;
+
+-- 5. TABLAS DE TRANSACCIONES (VENTAS MAESTRO-DETALLE)
+
+CREATE TABLE venta (
+  id_venta BIGINT NOT NULL AUTO_INCREMENT,
+  id_usuario BIGINT NOT NULL,
+  total DOUBLE NOT NULL,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_venta),
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+) ENGINE = InnoDB;
+
+CREATE TABLE venta_detalle (
+  id_detalle BIGINT NOT NULL AUTO_INCREMENT,
+  id_venta BIGINT NOT NULL,
+  id_producto BIGINT NOT NULL,
+  precio DOUBLE NOT NULL,
+  cantidad INT NOT NULL,
+  PRIMARY KEY (id_detalle),
+  CONSTRAINT fk_detalle_venta FOREIGN KEY (id_venta) REFERENCES venta(id_venta) ON DELETE CASCADE,
+  FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+) ENGINE = InnoDB;
+
+-- 6. CARGA DE DATOS DE PRUEBA (ESTILO TECHSHOP)
+
+-- Usuarios y contraseñas (BCrypt para: admin -> 123, juan -> 456)
+INSERT INTO usuario (username, password, nombre, apellidos, correo, activo) VALUES
+('admin', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.7uSyLnS', 'Luis David', 'Averruz', 'admin@danny.com', true),
+('vendedor', '$2a$10$X8O9jB8p7.8Y9f.6G5H4.OuVGkqRzgVymGe07xd00DMxs.7uSyLnS', 'Dariana', 'Vendedora', 'ventas@danny.com', true),
+('juan', '$2a$10$X8O9jB8p7.8Y9f.6G5H4.OuVGkqRzgVymGe07xd00DMxs.7uSyLnS', 'Juan', 'Cliente', 'juan@correo.com', true);
+
+-- Asignación de Roles
+INSERT INTO rol (nombre, id_usuario) VALUES 
+('ROLE_ADMIN', 1), ('ROLE_VENDEDOR', 1), ('ROLE_USER', 1),
+('ROLE_VENDEDOR', 2), ('ROLE_USER', 2),
+('ROLE_USER', 3);
+
+-- Productos
+INSERT INTO producto (nombre, marca, especie, unidad_medida, precio, existencias, ruta_imagen) VALUES 
+('Concentrado Adulto', 'Dogui', 'Perros', 'Saco', 12500, 20, 'https://ejemplo.com/perro.jpg'),
+('Concentrado Gatitos', 'Whiskas', 'Gatos', 'Saco', 8500, 15, 'https://ejemplo.com/gato.jpg'),
+('Alimento Tilapia', 'Aguas', 'Tilapias', 'Saco', 18000, 30, 'https://ejemplo.com/tilapia.jpg'),
+('Concentrado Cerdo', 'Cerditex', 'Cerdos', 'Saco', 22000, 10, 'https://ejemplo.com/cerdo.jpg');
+
+-- Rutas de acceso
+INSERT INTO ruta (ruta, requiere_rol, id_rol) VALUES 
+('/', false, NULL),
+('/login', false, NULL),
+('/js/**', false, NULL),
+('/css/**', false, NULL),
+('/producto/listado', true, 2), -- Vendedor puede ver lista
+('/producto/**', true, 1),        -- Admin tiene acceso total
+('/venta/**', true, 2);         -- Vendedor ve ventas
+
+UPDATE usuario SET password = '123' WHERE username = 'admin';
+UPDATE usuario SET password = '456' WHERE username = 'vendedor';
+UPDATE usuario SET password = '456' WHERE username = 'juan';
+
+
+SELECT * FROM concentrados_db.producto;

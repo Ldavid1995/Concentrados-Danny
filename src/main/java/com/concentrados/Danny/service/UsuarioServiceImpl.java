@@ -42,8 +42,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public void asignarRol(Integer idUsuario, String nombreRol) {
-        // Opcional: Podrías verificar si ya existe el rol para ese usuario
-        // para evitar insertar el mismo rol dos veces.
         Rol rol = new Rol();
         rol.setNombre(nombreRol);
         rol.setIdUsuario(idUsuario);

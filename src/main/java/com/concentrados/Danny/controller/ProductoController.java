@@ -33,11 +33,8 @@ public class ProductoController {
     @Autowired
     private FichaService fichaService;
 
-    // --- NUEVO MÉTODO PARA AGREGAR PRODUCTOS ---
     @GetMapping("/nuevo")
     public String nuevoProducto(Producto producto, Model model) {
-        // Simplemente retornamos la vista de modificación, 
-        // pero con un objeto producto vacío
         return "/producto/modifica";
     }
 
@@ -86,7 +83,6 @@ public class ProductoController {
         }
 
         productoService.save(producto);
-        // Redirigir al listado general si no hay especie, para evitar errores de URL
         String especieUrl = (producto.getEspecie() != null && !producto.getEspecie().isEmpty()) 
                             ? "?especie=" + producto.getEspecie() : "";
         

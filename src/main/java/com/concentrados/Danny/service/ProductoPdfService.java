@@ -11,27 +11,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProductoPdfService {
     
-    /**
-     * Exporta el catálogo de productos a PDF.
-     * Se agrega DocumentException a la firma para solucionar el error de compilación de Maven.
-     */
+
     public void exportar(HttpServletResponse response, List<Producto> productos) throws DocumentException, IOException {
         Document documento = new Document(PageSize.A4);
         
-        // El método getInstance lanza DocumentException, ahora sí está declarado en el 'throws'
         PdfWriter.getInstance(documento, response.getOutputStream());
         
         documento.open();
         
-        // Título del Reporte - Concentrados Danny
         Font fuenteTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
         Paragraph titulo = new Paragraph("Catálogo de Precios - Concentrados Danny", fuenteTitulo);
         titulo.setAlignment(Paragraph.ALIGN_CENTER);
         documento.add(titulo);
         
-        documento.add(new Paragraph(" ")); // Espacio en blanco
+        documento.add(new Paragraph(" ")); 
         
-        // Tabla de datos numéricos y detalles
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);
         

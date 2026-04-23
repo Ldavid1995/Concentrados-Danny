@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequestMapping("/carrito") // Todas las rutas empezarán con /carrito
+@RequestMapping("/carrito") 
 public class ItemController {
 
     @Autowired
     private ItemService itemService;
 
-    // 1. Ver el contenido del carrito
     @GetMapping("/listado")
     public String listado(Model model) {
         var items = itemService.gets();
@@ -35,10 +34,10 @@ public class ItemController {
         }
         model.addAttribute("carritoTotal", carritoTotal);
         
-        return "carrito/lista"; // Asegúrate de tener esta carpeta y archivo .html
+        return "carrito/lista"; 
     }
 
-    // 2. Agregar un producto al carrito (EL MÁS IMPORTANTE)
+    // 2. Agregar un producto al carrito 
     @GetMapping("/agregar/{idProducto}")
     public String agregarItem(@PathVariable Long idProducto,
             @RequestParam(value = "redirect", required = false) String redirect,
@@ -56,7 +55,7 @@ public class ItemController {
         return "redirect:/carrito/listado";
     }
 
-    // 4. Editar cantidad (opcional)
+    // 4. Editar cantidad 
     @GetMapping("/modificar/{idProducto}")
     public String modificarItem(Item item, Model model) {
         item = itemService.get(item);

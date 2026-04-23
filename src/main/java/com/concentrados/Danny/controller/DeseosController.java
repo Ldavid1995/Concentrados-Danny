@@ -78,7 +78,7 @@ public class DeseosController {
         return redireccionSegura(redirect);
     }
 
-    // --- MÉTODOS DE APOYO (HELPERS) ---
+    // --- MÉTODOS DE APOYO  ---
 
     private Producto buscarProducto(Long idProducto) {
         Producto producto = new Producto();

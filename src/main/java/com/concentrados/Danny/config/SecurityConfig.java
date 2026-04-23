@@ -26,30 +26,29 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-                // 1. Recursos estáticos (Acceso total)
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                
-                // 2. Rutas Públicas (Index, Login y Registro básico)
-                .requestMatchers("/", "/index", "/login", "/registro/nuevo", "/registro/crear").permitAll()
-                .requestMatchers("/producto/listado/**", "/producto/calculadora").permitAll()
-                .requestMatchers("/carrito/**").permitAll()
+                // 1. Recursos estáticos
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
 
-                // 3. Permisos para VENDEDOR y ADMIN (Gestión de ventas y stock)
-                .requestMatchers("/reporte/**").hasAnyRole("ADMIN", "VENDEDOR")
+                // 2. Rutas Públicas
+                .requestMatchers("/", "/index", "/login", "/registro/**").permitAll()
+                .requestMatchers("/producto/listado/**", "/producto/calculadora", "/carrito/**").permitAll()
+
+                // 3. Reportes y Cotizaciones (Permitido para USER, VENDEDOR y ADMIN)
+                .requestMatchers("/reporte/**").hasAnyRole("ADMIN", "VENDEDOR", "USER")
+
+                // 4. Gestión de Productos (VENDEDOR y ADMIN)
                 .requestMatchers("/producto/nuevo", "/producto/guardar", "/producto/modificar/**").hasAnyRole("ADMIN", "VENDEDOR")
                 
-                // 4. Permisos EXCLUSIVOS de ADMIN (Seguridad y borrado)
-                .requestMatchers("/registro/usuarios", "/registro/asignarRol").hasAuthority("ADMIN")
-                .requestMatchers("/producto/eliminar/**").hasAuthority("ADMIN")
+                // 5. Funciones Críticas (Solo ADMIN)
+                .requestMatchers("/producto/eliminar/**", "/usuario/**").hasRole("ADMIN")
                 
-                // 5. Cualquier otra ruta de productos requiere estar logueado
-                .requestMatchers("/producto/**").authenticated()
-                
+                // 6. Cualquier otra ruta requiere estar logueado
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/", true)
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/", true) 
                 .permitAll()
             )
             .logout(logout -> logout
@@ -65,7 +64,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Mantenemos NoOp para tus pruebas con claves en texto plano (123, 456)
         return NoOpPasswordEncoder.getInstance();
     }
 

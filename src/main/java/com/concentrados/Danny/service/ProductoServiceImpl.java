@@ -1,4 +1,4 @@
-package com.concentrados.Danny.service.impl;
+package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.repository.ProductoRepository;

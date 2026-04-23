@@ -120,7 +120,6 @@ public class VentaController {
             Usuario usuario = usuarioService.getUsuarioPorUsername(username);
             
             if (usuario != null) {
-                // Obtenemos el historial de compras del usuario actual
                 List<Venta> ventas = ventaService.getVentasPorUsuario(usuario.getIdUsuario().longValue());
                 model.addAttribute("ventas", ventas);
             }

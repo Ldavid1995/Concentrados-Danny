@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
-    // Método para jalar el historial específico de un usuario
     List<Venta> findByIdUsuario(Long idUsuario);
     
     @Modifying

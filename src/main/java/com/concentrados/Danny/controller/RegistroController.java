@@ -29,7 +29,6 @@ public class RegistroController {
     @PostMapping("/crear")
     public String crearUsuario(@ModelAttribute Usuario usuario) {
         usuario.setActivo(true);
-        // El 'true' indica que se le asigne el rol ROLE_USER por defecto
         usuarioService.save(usuario, true); 
         return "redirect:/login?registroExitoso=true";
     }
@@ -39,10 +38,7 @@ public class RegistroController {
     public String asignarRol(@RequestParam("idUsuario") Integer idUsuario, 
                              @RequestParam("nombreRol") String nombreRol) {
         
-        // Toda la lógica de creación del objeto Rol y guardado se hace aquí:
         usuarioService.asignarRol(idUsuario, nombreRol);
-        
-        // Redirigimos a la misma tabla para ver los cambios de inmediato
         return "redirect:/registro/usuarios"; 
     }
 

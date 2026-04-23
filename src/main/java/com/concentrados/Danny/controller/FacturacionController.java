@@ -44,7 +44,7 @@ public class FacturacionController {
 public String procesarFactura(@RequestParam Long idProducto,
                               @RequestParam int cantidad,
                               @RequestParam String metodoPago,
-                              HttpSession session, // Inyectamos la sesión
+                              HttpSession session, 
                               Model model) {
     Producto clave = new Producto();
     clave.setIdProducto(idProducto);
@@ -76,7 +76,6 @@ public String procesarFactura(@RequestParam Long idProducto,
 
     @GetMapping("/confirmacion/{idProducto}")
     public String mostrarConfirmacion(@PathVariable Long idProducto, Model model) {
-        // Si por alguna razón el flash attribute se pierde, recargamos el producto
         if (!model.containsAttribute("producto")) {
             Producto clave = new Producto();
             clave.setIdProducto(idProducto);

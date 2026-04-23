@@ -4,12 +4,18 @@ import com.concentrados.Danny.service.ReporteService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
+import java.util.Collection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -20,51 +26,50 @@ public class ReporteServiceImpl implements ReporteService {
     @Override
     public void generarPdf(String reporte, Map<String, Object> parametros, HttpServletResponse response) throws IOException {
         try {
-            System.out.println("--- INICIANDO GENERACIÓN DE PDF: " + reporte + " ---");
+            System.out.println("--- INICIANDO EXPORTACIÓN DE PROFORMA: " + reporte + " ---");
 
-            // 1. Configurar el encabezado de la respuesta
+            response.reset();
+
+            String fecha = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+            String nombreArchivo = "Proforma_Danny_" + fecha + ".pdf";
+
             response.setContentType("application/pdf");
-            response.addHeader("Content-disposition", "inline; filename=" + reporte + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"");
 
-            // 2. Cargar el archivo .jasper
-            // IMPORTANTE: Verifica que el archivo esté en src/main/resources/reportes/cotizacion.jasper
-            String ruta = "reportes/" + reporte + ".jasper";
+            String ruta = "reportes/" + reporte + ".jrxml";
             ClassPathResource resource = new ClassPathResource(ruta);
             
-            System.out.println("Buscando archivo en: " + resource.getPath());
-
             if (!resource.exists()) {
-                System.err.println("ERROR: El archivo " + ruta + " no existe físicamente.");
-                throw new IOException("No se encontró el archivo .jasper en la ruta especificada.");
+                throw new IOException("El archivo de diseño no existe en: " + ruta);
             }
 
-            InputStream inputStream = resource.getInputStream();
-            System.out.println("Archivo cargado correctamente.");
+            try (InputStream inputStream = resource.getInputStream()) {
+                JasperReport jasperReport = JasperCompileManager.compileReport(inputStream);
+                System.out.println("Diseño JRXML compilado exitosamente.");
 
-            // 3. Llenar el reporte
-            // Si pasas una lista de items en el map, Jasper necesita un DataSource
-            // Usamos JRBeanCollectionDataSource si 'items' es una lista, o JREmptyDataSource si no
-            Object items = parametros.get("items");
-            JasperPrint jasperPrint;
-            
-            if (items instanceof java.util.Collection) {
-                System.out.println("Detectada colección de items, usando JRBeanCollectionDataSource.");
-                jasperPrint = JasperFillManager.fillReport(inputStream, parametros, 
-                        new JRBeanCollectionDataSource((java.util.Collection<?>) items));
-            } else {
-                System.out.println("No se detectó colección, usando DataSource vacío.");
-                jasperPrint = JasperFillManager.fillReport(inputStream, parametros, new JREmptyDataSource());
+                Object items = parametros.get("items");
+                JasperPrint jasperPrint;
+                
+                if (items instanceof Collection && !((Collection<?>) items).isEmpty()) {
+                    JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource((Collection<?>) items, false);
+                    jasperPrint = JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+                } else {
+                    jasperPrint = JasperFillManager.fillReport(jasperReport, parametros, new JREmptyDataSource());
+                }
+
+                try (OutputStream out = response.getOutputStream()) {
+                    JasperExportManager.exportReportToPdfStream(jasperPrint, out);
+                    out.flush();
+                }
             }
 
-            // 4. Exportar al navegador
-            JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
             System.out.println("--- PDF ENVIADO AL NAVEGADOR EXITOSAMENTE ---");
             
         } catch (JRException e) {
-            System.err.println("Error crítico en JasperReports: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error técnico en JasperReports: " + e.getMessage());
+            throw new IOException("No se pudo procesar el motor de reportes", e);
         } catch (Exception e) {
-            System.err.println("Error inesperado: " + e.getMessage());
+            System.err.println("Error inesperado en ReporteServiceImpl: " + e.getMessage());
             e.printStackTrace();
         }
     }

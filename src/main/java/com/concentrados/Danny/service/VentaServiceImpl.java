@@ -74,7 +74,6 @@ public class VentaServiceImpl implements VentaService {
         return venta;
     }
 
-    // --- MÉTODOS PARA EL REPORTE MENSUAL (HU-06) ---
 
     @Override
     @Transactional(readOnly = true)
@@ -90,7 +89,6 @@ public class VentaServiceImpl implements VentaService {
         return ventas.stream().mapToDouble(Venta::getTotal).sum();
     }
 
-    // --- OTROS MÉTODOS DE LA INTERFAZ ---
 
     @Override
     @Transactional
