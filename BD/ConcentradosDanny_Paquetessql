@@ -96,3 +96,510 @@ CREATE OR REPLACE PACKAGE BODY pkg_usuarios AS
     END generar_token;
 END pkg_usuarios;
 /
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_categorias AS
+    -- Procedimiento para crear categorías
+    PROCEDURE crear_categoria(
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para actualizar categorías
+    PROCEDURE actualizar_categoria(
+        p_id IN NUMBER,
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2
+    );
+
+    -- Procedimiento para desactivar una categoría
+    PROCEDURE desactivar_categoria(p_id IN NUMBER);
+
+    -- Función para obtener el nombre de una categoría
+    FUNCTION obtener_nombre_categoria(p_id IN NUMBER) RETURN VARCHAR2;
+END pkg_categorias;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_categorias AS
+    PROCEDURE crear_categoria(
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO categoria (nombre_categoria, descripcion, activo)
+        VALUES (p_nombre, p_descripcion, 1)
+        RETURNING id_categoria INTO p_id;
+        COMMIT;
+    END crear_categoria;
+
+    PROCEDURE actualizar_categoria(
+        p_id IN NUMBER,
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE categoria
+        SET nombre_categoria = p_nombre, descripcion = p_descripcion
+        WHERE id_categoria = p_id;
+        COMMIT;
+    END actualizar_categoria;
+
+    PROCEDURE desactivar_categoria(p_id IN NUMBER) AS
+    BEGIN
+        UPDATE categoria SET activo = 0 WHERE id_categoria = p_id;
+        COMMIT;
+    END desactivar_categoria;
+
+    FUNCTION obtener_nombre_categoria(p_id IN NUMBER) RETURN VARCHAR2 AS
+        v_nombre VARCHAR2(100);
+    BEGIN
+        SELECT nombre_categoria INTO v_nombre FROM categoria WHERE id_categoria = p_id;
+        RETURN v_nombre;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN NULL;
+    END obtener_nombre_categoria;
+END pkg_categorias;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_direcciones AS
+    -- Procedimiento para crear una dirección
+    PROCEDURE crear_direccion(
+        p_id_usuario IN NUMBER,
+        p_direccion IN VARCHAR2,
+        p_provincia IN VARCHAR2,
+        p_canton IN VARCHAR2,
+        p_distrito IN VARCHAR2,
+        p_codigo_postal IN VARCHAR2,
+        p_referencia IN VARCHAR2,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para actualizar una dirección
+    PROCEDURE actualizar_direccion(
+        p_id IN NUMBER,
+        p_direccion IN VARCHAR2,
+        p_provincia IN VARCHAR2,
+        p_canton IN VARCHAR2,
+        p_distrito IN VARCHAR2,
+        p_codigo_postal IN VARCHAR2,
+        p_referencia IN VARCHAR2
+    );
+
+    -- Procedimiento para desactivar una dirección
+    PROCEDURE desactivar_direccion(p_id IN NUMBER);
+
+    -- Función para contar las direcciones activas de un usuario
+    FUNCTION contar_direcciones_usuario(p_id_usuario IN NUMBER) RETURN NUMBER;
+END pkg_direcciones;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_direcciones AS
+    PROCEDURE crear_direccion(
+        p_id_usuario IN NUMBER,
+        p_direccion IN VARCHAR2,
+        p_provincia IN VARCHAR2,
+        p_canton IN VARCHAR2,
+        p_distrito IN VARCHAR2,
+        p_codigo_postal IN VARCHAR2,
+        p_referencia IN VARCHAR2,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO direccion (id_usuario, direccion, provincia, canton, distrito, codigo_postal, referencia, activo)
+        VALUES (p_id_usuario, p_direccion, p_provincia, p_canton, p_distrito, p_codigo_postal, p_referencia, 1)
+        RETURNING id_direccion INTO p_id;
+        COMMIT;
+    END crear_direccion;
+
+    PROCEDURE actualizar_direccion(
+        p_id IN NUMBER,
+        p_direccion IN VARCHAR2,
+        p_provincia IN VARCHAR2,
+        p_canton IN VARCHAR2,
+        p_distrito IN VARCHAR2,
+        p_codigo_postal IN VARCHAR2,
+        p_referencia IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE direccion
+        SET direccion = p_direccion, provincia = p_provincia, canton = p_canton,
+            distrito = p_distrito, codigo_postal = p_codigo_postal, referencia = p_referencia
+        WHERE id_direccion = p_id;
+        COMMIT;
+    END actualizar_direccion;
+
+    PROCEDURE desactivar_direccion(p_id IN NUMBER) AS
+    BEGIN
+        UPDATE direccion SET activo = 0 WHERE id_direccion = p_id;
+        COMMIT;
+    END desactivar_direccion;
+
+    FUNCTION contar_direcciones_usuario(p_id_usuario IN NUMBER) RETURN NUMBER AS
+        v_total NUMBER := 0;
+    BEGIN
+        SELECT COUNT(*) INTO v_total FROM direccion WHERE id_usuario = p_id_usuario AND activo = 1;
+        RETURN v_total;
+    END contar_direcciones_usuario;
+END pkg_direcciones;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_pedidos AS
+    -- Procedimiento para crear un pedido
+    PROCEDURE crear_pedido(
+        p_id_usuario IN NUMBER,
+        p_id_direccion IN NUMBER,
+        p_id_horario IN NUMBER,
+        p_id_zona IN NUMBER,
+        p_id_cupon IN NUMBER,
+        p_fecha_entrega IN DATE,
+        p_hora_entrega IN VARCHAR2,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para agregar una línea de detalle al pedido
+    PROCEDURE agregar_detalle_pedido(
+        p_id_pedido IN NUMBER,
+        p_id_producto IN NUMBER,
+        p_id_promocion IN NUMBER,
+        p_cantidad IN NUMBER,
+        p_precio_unitario IN NUMBER,
+        p_descuento IN NUMBER
+    );
+
+    -- Procedimiento para actualizar el estado de un pedido
+    PROCEDURE actualizar_estado_pedido(
+        p_id_pedido IN NUMBER,
+        p_estado IN VARCHAR2
+    );
+
+    -- Función para obtener el total de un pedido
+    FUNCTION obtener_total_pedido(p_id_pedido IN NUMBER) RETURN NUMBER;
+END pkg_pedidos;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_pedidos AS
+    PROCEDURE crear_pedido(
+        p_id_usuario IN NUMBER,
+        p_id_direccion IN NUMBER,
+        p_id_horario IN NUMBER,
+        p_id_zona IN NUMBER,
+        p_id_cupon IN NUMBER,
+        p_fecha_entrega IN DATE,
+        p_hora_entrega IN VARCHAR2,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO pedido (id_usuario, id_direccion, id_horario, id_zona, id_cupon, fecha_entrega, hora_entrega, estado, total)
+        VALUES (p_id_usuario, p_id_direccion, p_id_horario, p_id_zona, p_id_cupon, p_fecha_entrega, p_hora_entrega, 'PENDIENTE', 0)
+        RETURNING id_pedido INTO p_id;
+        COMMIT;
+    END crear_pedido;
+
+    PROCEDURE agregar_detalle_pedido(
+        p_id_pedido IN NUMBER,
+        p_id_producto IN NUMBER,
+        p_id_promocion IN NUMBER,
+        p_cantidad IN NUMBER,
+        p_precio_unitario IN NUMBER,
+        p_descuento IN NUMBER
+    ) AS
+        v_subtotal NUMBER;
+    BEGIN
+        v_subtotal := (p_cantidad * p_precio_unitario) - p_descuento;
+
+        INSERT INTO detalle_pedido (id_pedido, id_producto, id_promocion, cantidad, precio_unitario, descuento, subtotal)
+        VALUES (p_id_pedido, p_id_producto, p_id_promocion, p_cantidad, p_precio_unitario, p_descuento, v_subtotal);
+
+        UPDATE pedido SET total = total + v_subtotal WHERE id_pedido = p_id_pedido;
+        COMMIT;
+    END agregar_detalle_pedido;
+
+    PROCEDURE actualizar_estado_pedido(
+        p_id_pedido IN NUMBER,
+        p_estado IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE pedido SET estado = p_estado WHERE id_pedido = p_id_pedido;
+        COMMIT;
+    END actualizar_estado_pedido;
+
+    FUNCTION obtener_total_pedido(p_id_pedido IN NUMBER) RETURN NUMBER AS
+        v_total NUMBER;
+    BEGIN
+        SELECT total INTO v_total FROM pedido WHERE id_pedido = p_id_pedido;
+        RETURN v_total;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 0;
+    END obtener_total_pedido;
+END pkg_pedidos;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_pagos AS
+    -- Procedimiento para registrar un pago
+    PROCEDURE registrar_pago(
+        p_id_pedido IN NUMBER,
+        p_metodo_pago IN VARCHAR2,
+        p_monto IN NUMBER,
+        p_referencia_bancaria IN VARCHAR2,
+        p_autorizacion IN VARCHAR2,
+        p_numero_transaccion IN VARCHAR2,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para actualizar el estado de un pago
+    PROCEDURE actualizar_estado_pago(
+        p_id_pago IN NUMBER,
+        p_estado_pago IN VARCHAR2
+    );
+
+    -- Función para obtener el monto total pagado de un pedido
+    FUNCTION obtener_monto_pagado(p_id_pedido IN NUMBER) RETURN NUMBER;
+END pkg_pagos;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_pagos AS
+    PROCEDURE registrar_pago(
+        p_id_pedido IN NUMBER,
+        p_metodo_pago IN VARCHAR2,
+        p_monto IN NUMBER,
+        p_referencia_bancaria IN VARCHAR2,
+        p_autorizacion IN VARCHAR2,
+        p_numero_transaccion IN VARCHAR2,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO pago (id_pedido, metodo_pago, monto, estado_pago, referencia_bancaria, autorizacion, numero_transaccion)
+        VALUES (p_id_pedido, p_metodo_pago, p_monto, 'PENDIENTE', p_referencia_bancaria, p_autorizacion, p_numero_transaccion)
+        RETURNING id_pago INTO p_id;
+        COMMIT;
+    END registrar_pago;
+
+    PROCEDURE actualizar_estado_pago(
+        p_id_pago IN NUMBER,
+        p_estado_pago IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE pago SET estado_pago = p_estado_pago WHERE id_pago = p_id_pago;
+        COMMIT;
+    END actualizar_estado_pago;
+
+    FUNCTION obtener_monto_pagado(p_id_pedido IN NUMBER) RETURN NUMBER AS
+        v_monto NUMBER := 0;
+    BEGIN
+        SELECT NVL(SUM(monto), 0) INTO v_monto
+        FROM pago
+        WHERE id_pedido = p_id_pedido AND estado_pago = 'COMPLETADO';
+        RETURN v_monto;
+    END obtener_monto_pagado;
+END pkg_pagos;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_facturas AS
+    -- Procedimiento para generar una factura a partir de un pedido
+    PROCEDURE generar_factura(
+        p_id_pedido IN NUMBER,
+        p_numero_factura IN VARCHAR2,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para anular una factura
+    PROCEDURE anular_factura(p_id_factura IN NUMBER);
+
+    -- Función para obtener el total facturado de un pedido
+    FUNCTION obtener_total_factura(p_id_pedido IN NUMBER) RETURN NUMBER;
+END pkg_facturas;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_facturas AS
+    PROCEDURE generar_factura(
+        p_id_pedido IN NUMBER,
+        p_numero_factura IN VARCHAR2,
+        p_id OUT NUMBER
+    ) AS
+        v_total NUMBER;
+    BEGIN
+        SELECT total INTO v_total FROM pedido WHERE id_pedido = p_id_pedido;
+
+        INSERT INTO factura (id_pedido, numero_factura, total, estado)
+        VALUES (p_id_pedido, p_numero_factura, v_total, 'EMITIDA')
+        RETURNING id_factura INTO p_id;
+        COMMIT;
+    END generar_factura;
+
+    PROCEDURE anular_factura(p_id_factura IN NUMBER) AS
+    BEGIN
+        UPDATE factura SET estado = 'ANULADA' WHERE id_factura = p_id_factura;
+        COMMIT;
+    END anular_factura;
+
+    FUNCTION obtener_total_factura(p_id_pedido IN NUMBER) RETURN NUMBER AS
+        v_total NUMBER;
+    BEGIN
+        SELECT total INTO v_total FROM factura WHERE id_pedido = p_id_pedido;
+        RETURN v_total;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 0;
+    END obtener_total_factura;
+END pkg_facturas;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_promociones AS
+    -- Procedimiento para crear una promoción
+    PROCEDURE crear_promocion(
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2,
+        p_porcentaje IN NUMBER,
+        p_fecha_inicio IN DATE,
+        p_fecha_fin IN DATE,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para asociar un producto a una promoción
+    PROCEDURE asociar_producto_promocion(
+        p_id_producto IN NUMBER,
+        p_id_promocion IN NUMBER
+    );
+
+    -- Procedimiento para desactivar una promoción
+    PROCEDURE desactivar_promocion(p_id_promocion IN NUMBER);
+
+    -- Función para obtener el porcentaje de descuento de una promoción
+    FUNCTION obtener_descuento_promocion(p_id_promocion IN NUMBER) RETURN NUMBER;
+END pkg_promociones;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_promociones AS
+    PROCEDURE crear_promocion(
+        p_nombre IN VARCHAR2,
+        p_descripcion IN VARCHAR2,
+        p_porcentaje IN NUMBER,
+        p_fecha_inicio IN DATE,
+        p_fecha_fin IN DATE,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO promocion (nombre, descripcion, porcentaje_descuento, fecha_inicio, fecha_fin, activo)
+        VALUES (p_nombre, p_descripcion, p_porcentaje, p_fecha_inicio, p_fecha_fin, 1)
+        RETURNING id_promocion INTO p_id;
+        COMMIT;
+    END crear_promocion;
+
+    PROCEDURE asociar_producto_promocion(
+        p_id_producto IN NUMBER,
+        p_id_promocion IN NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO producto_promocion (id_producto, id_promocion)
+        VALUES (p_id_producto, p_id_promocion);
+        COMMIT;
+    END asociar_producto_promocion;
+
+    PROCEDURE desactivar_promocion(p_id_promocion IN NUMBER) AS
+    BEGIN
+        UPDATE promocion SET activo = 0 WHERE id_promocion = p_id_promocion;
+        COMMIT;
+    END desactivar_promocion;
+
+    FUNCTION obtener_descuento_promocion(p_id_promocion IN NUMBER) RETURN NUMBER AS
+        v_porcentaje NUMBER;
+    BEGIN
+        SELECT porcentaje_descuento INTO v_porcentaje FROM promocion WHERE id_promocion = p_id_promocion;
+        RETURN v_porcentaje;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 0;
+    END obtener_descuento_promocion;
+END pkg_promociones;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_cotizaciones AS
+    -- Procedimiento para crear una cotización
+    PROCEDURE crear_cotizacion(
+        p_id_usuario IN NUMBER,
+        p_fecha_vencimiento IN DATE,
+        p_id OUT NUMBER
+    );
+
+    -- Procedimiento para agregar una línea de detalle a la cotización
+    PROCEDURE agregar_detalle_cotizacion(
+        p_id_cotizacion IN NUMBER,
+        p_id_producto IN NUMBER,
+        p_cantidad IN NUMBER,
+        p_precio_unitario IN NUMBER
+    );
+
+    -- Procedimiento para actualizar el estado de una cotización
+    PROCEDURE actualizar_estado_cotizacion(
+        p_id_cotizacion IN NUMBER,
+        p_estado IN VARCHAR2
+    );
+
+    -- Función para obtener el total de una cotización
+    FUNCTION obtener_total_cotizacion(p_id_cotizacion IN NUMBER) RETURN NUMBER;
+END pkg_cotizaciones;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_cotizaciones AS
+    PROCEDURE crear_cotizacion(
+        p_id_usuario IN NUMBER,
+        p_fecha_vencimiento IN DATE,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO cotizacion (id_usuario, fecha_vencimiento, subtotal, impuesto, descuento, total, estado)
+        VALUES (p_id_usuario, p_fecha_vencimiento, 0, 0, 0, 0, 'GENERADA')
+        RETURNING id_cotizacion INTO p_id;
+        COMMIT;
+    END crear_cotizacion;
+
+    PROCEDURE agregar_detalle_cotizacion(
+        p_id_cotizacion IN NUMBER,
+        p_id_producto IN NUMBER,
+        p_cantidad IN NUMBER,
+        p_precio_unitario IN NUMBER
+    ) AS
+        v_subtotal NUMBER;
+    BEGIN
+        v_subtotal := p_cantidad * p_precio_unitario;
+
+        INSERT INTO cotizacion_detalle (id_cotizacion, id_producto, cantidad, precio_unitario, subtotal)
+        VALUES (p_id_cotizacion, p_id_producto, p_cantidad, p_precio_unitario, v_subtotal);
+
+        UPDATE cotizacion
+        SET subtotal = subtotal + v_subtotal,
+            total = total + v_subtotal
+        WHERE id_cotizacion = p_id_cotizacion;
+        COMMIT;
+    END agregar_detalle_cotizacion;
+
+    PROCEDURE actualizar_estado_cotizacion(
+        p_id_cotizacion IN NUMBER,
+        p_estado IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE cotizacion SET estado = p_estado WHERE id_cotizacion = p_id_cotizacion;
+        COMMIT;
+    END actualizar_estado_cotizacion;
+
+    FUNCTION obtener_total_cotizacion(p_id_cotizacion IN NUMBER) RETURN NUMBER AS
+        v_total NUMBER;
+    BEGIN
+        SELECT total INTO v_total FROM cotizacion WHERE id_cotizacion = p_id_cotizacion;
+        RETURN v_total;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 0;
+    END obtener_total_cotizacion;
+END pkg_cotizaciones;
+/
