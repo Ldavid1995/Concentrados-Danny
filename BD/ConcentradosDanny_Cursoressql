@@ -1,0 +1,23 @@
+-------------------* Cursores *----------------------------
+
+CREATE OR REPLACE PROCEDURE sp_reporte_stock_critico AS
+
+    CURSOR c_productos_bajos IS
+        SELECT nombre, existencias, stock_minimo 
+        FROM producto 
+        WHERE existencias <= stock_minimo;
+        
+    v_nombre producto.nombre%TYPE;
+    v_stock producto.existencias%TYPE;
+    v_min producto.stock_minimo%TYPE;
+BEGIN
+    OPEN c_productos_bajos;
+    LOOP
+        FETCH c_productos_bajos INTO v_nombre, v_stock, v_min;
+        EXIT WHEN c_productos_bajos%NOTFOUND;
+
+        DBMS_OUTPUT.PUT_LINE('PRODUCTO CRÍTICO: ' || v_nombre || ' | Stock actual: ' || v_stock || ' (Mínimo: ' || v_min || ')');
+    END LOOP;
+    CLOSE c_productos_bajos;
+END;
+/

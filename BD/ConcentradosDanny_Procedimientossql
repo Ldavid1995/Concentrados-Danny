@@ -1,0 +1,40 @@
+---------* PROCEDIMIENTOS *------------------
+--1.SP_CREAR_PEDIDO
+CREATE OR REPLACE PROCEDURE sp_crear_pedido(
+    p_id_usuario IN NUMBER,
+    p_id_horario IN NUMBER,
+    p_id_zona IN NUMBER,
+    p_fecha_entrega IN DATE,
+    p_hora_entrega IN VARCHAR2,
+    p_direccion IN VARCHAR2,
+    p_id_pedido OUT NUMBER
+) AS
+BEGIN
+    INSERT INTO pedido (id_usuario, id_horario, id_zona, fecha_entrega, hora_entrega, direccion, estado_pedido)
+    VALUES (p_id_usuario, p_id_horario, p_id_zona, p_fecha_entrega, p_hora_entrega, p_direccion, 'PENDIENTE')
+    RETURNING id_pedido INTO p_id_pedido;
+    COMMIT;
+END;
+/
+
+--2.SP_PROCESAR_PAGO
+CREATE OR REPLACE PROCEDURE sp_procesar_pago(
+    p_id_venta IN NUMBER,
+    p_monto IN NUMBER,
+    p_referencia IN VARCHAR2,
+    p_autorizacion IN VARCHAR2,
+    p_estado OUT VARCHAR2
+) AS
+BEGIN
+    -- Lógica simulada de aprobación bancaria
+    IF p_monto > 0 THEN
+        p_estado := 'APROBADO';
+    ELSE
+        p_estado := 'RECHAZADO';
+    END IF;
+
+    INSERT INTO pago (id_venta, monto, estado_pago, referencia_bancaria, autorizacion)
+    VALUES (p_id_venta, p_monto, p_estado, p_referencia, p_autorizacion);
+    COMMIT;
+END;
+/

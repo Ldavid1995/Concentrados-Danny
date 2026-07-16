@@ -1,0 +1,98 @@
+CREATE OR REPLACE PACKAGE pkg_productos AS
+    -- Procedimiento para crear productos
+    PROCEDURE crear_producto(
+        p_nombre IN VARCHAR2,
+        p_marca IN VARCHAR2,
+        p_unidad IN VARCHAR2,
+        p_precio IN NUMBER,
+        p_existencias IN NUMBER,
+        p_stock_min IN NUMBER,
+        p_id OUT NUMBER
+    );
+    
+    -- Procedimiento para actualizar productos
+    PROCEDURE actualizar_producto(
+        p_id IN NUMBER,
+        p_nombre IN VARCHAR2,
+        p_marca IN VARCHAR2,
+        p_precio IN NUMBER,
+        p_existencias IN NUMBER
+    );
+
+-- Función para obtener el precio de un producto
+    FUNCTION obtener_precio(p_id IN NUMBER) RETURN NUMBER;
+END pkg_productos;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_productos AS
+    PROCEDURE crear_producto(
+        p_nombre IN VARCHAR2,
+        p_marca IN VARCHAR2,
+        p_unidad IN VARCHAR2,
+        p_precio IN NUMBER,
+        p_existencias IN NUMBER,
+        p_stock_min IN NUMBER,
+        p_id OUT NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO producto (nombre, marca, unidad_medida, precio, existencias, stock_minimo, activo)
+        VALUES (p_nombre, p_marca, p_unidad, p_precio, p_existencias, p_stock_min, 1)
+        RETURNING id_producto INTO p_id;
+        COMMIT;
+    END crear_producto;
+
+    PROCEDURE actualizar_producto(
+        p_id IN NUMBER,
+        p_nombre IN VARCHAR2,
+        p_marca IN VARCHAR2,
+        p_precio IN NUMBER,
+        p_existencias IN NUMBER
+    ) AS
+    BEGIN
+        UPDATE producto 
+        SET nombre = p_nombre, marca = p_marca, precio = p_precio, existencias = p_existencias
+        WHERE id_producto = p_id;
+        COMMIT;
+    END actualizar_producto;
+
+    FUNCTION obtener_precio(p_id IN NUMBER) RETURN NUMBER AS
+        v_precio NUMBER;
+    BEGIN
+        SELECT precio INTO v_precio FROM producto WHERE id_producto = p_id;
+        RETURN v_precio;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN 0;
+    END obtener_precio;
+END pkg_productos;
+/
+
+-----------------------------------------------------------------------
+CREATE OR REPLACE PACKAGE pkg_usuarios AS
+    -- Función para validar credenciales (HU 1)
+    FUNCTION verificar_usuario(p_username IN VARCHAR2, p_password IN VARCHAR2) RETURN NUMBER;
+    
+    -- Procedimiento para generar token de recuperación (HU 1)
+    PROCEDURE generar_token(p_id_usuario IN NUMBER, p_token OUT VARCHAR2);
+END pkg_usuarios;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_usuarios AS
+    FUNCTION verificar_usuario(p_username IN VARCHAR2, p_password IN VARCHAR2) RETURN NUMBER AS
+        v_valido NUMBER := 0;
+    BEGIN
+        SELECT COUNT(*) INTO v_valido 
+        FROM usuario 
+        WHERE username = p_username AND password = p_password AND activo = 1;
+        RETURN v_valido; -- Retorna 1 si existe, 0 si no
+    END verificar_usuario;
+
+    PROCEDURE generar_token(p_id_usuario IN NUMBER, p_token OUT VARCHAR2) AS
+    BEGIN
+        p_token := SYS_GUID(); -- Genera un token único aleatorio
+        INSERT INTO token_recuperacion (id_usuario, token, fecha_expiracion, usado)
+        VALUES (p_id_usuario, p_token, SYSDATE + 1, 0); -- Vence en 1 día
+        COMMIT;
+    END generar_token;
+END pkg_usuarios;
+/

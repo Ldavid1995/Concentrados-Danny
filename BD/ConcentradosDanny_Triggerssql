@@ -1,0 +1,27 @@
+---------------* Triggers *------------------
+
+--1.TRG_ALERTA_STOCK
+
+CREATE OR REPLACE TRIGGER trg_alerta_stock
+AFTER UPDATE OF existencias ON producto
+FOR EACH ROW
+BEGIN
+    IF :NEW.existencias <= :NEW.stock_minimo THEN
+        INSERT INTO alerta_stock (id_producto, mensaje)
+        VALUES (:NEW.id_producto, '¡ALERTA! El producto ' || :NEW.nombre || ' tiene un inventario bajo de: ' || :NEW.existencias || ' unidades.');
+    END IF;
+END;
+/
+
+--2.TRG_AUDIT_PRECIOS
+
+CREATE OR REPLACE TRIGGER trg_audit_precios
+BEFORE UPDATE OF precio ON producto
+FOR EACH ROW
+BEGIN
+-- Si el precio varía más del 50%, se puede levantar una excepción o alertar
+    IF :NEW.precio < (:OLD.precio * 0.5) THEN
+        DBMS_OUTPUT.PUT_LINE('Advertencia: El precio bajó más de la mitad.');
+    END IF;
+END;
+/

@@ -1,0 +1,39 @@
+----------------------------------------INSERTS DE PRUEBA-----------------------------
+
+
+-- 1. Especies
+INSERT INTO especie (nombre_especie) VALUES ('Perros');
+INSERT INTO especie (nombre_especie) VALUES ('Gatos');
+INSERT INTO especie (nombre_especie) VALUES ('Cerdos');
+
+-- 2. Horarios disponibles 
+INSERT INTO horario_entrega (bloque_horario) VALUES ('Mañana (8:00 AM - 12:00 MD)');
+INSERT INTO horario_entrega (bloque_horario) VALUES ('Tarde (1:00 PM - 5:00 PM)');
+
+-- 3. Usuarios
+INSERT INTO usuario (username, password, nombre, apellidos, correo, activo) 
+VALUES ('admin', '123', 'Luis David', 'Averruz', 'admin@danny.com', 1);
+
+INSERT INTO usuario (username, password, nombre, apellidos, correo, activo) 
+VALUES ('vendedor', '456', 'Dariana', 'Vendedora', 'ventas@danny.com', 1);
+
+INSERT INTO usuario (username, password, nombre, apellidos, correo, activo) 
+VALUES ('juan', '456', 'Juan', 'Cliente', 'juan@correo.com', 1);
+
+-- 4. Roles
+INSERT INTO rol (nombre, id_usuario) VALUES ('ROLE_ADMIN', 1);
+INSERT INTO rol (nombre, id_usuario) VALUES ('ROLE_VENDEDOR', 2);
+INSERT INTO rol (nombre, id_usuario) VALUES ('ROLE_USER', 3);
+
+-- 5. Productos 
+INSERT INTO producto (nombre, marca, unidad_medida, precio, existencias, stock_minimo) 
+VALUES ('Concentrado Adulto', 'Dogui', 'Saco', 12500, 20, 5);
+
+INSERT INTO producto (nombre, marca, unidad_medida, precio, existencias, stock_minimo) 
+VALUES ('Concentrado Gatitos', 'Whiskas', 'Saco', 8500, 15, 4);
+
+-- 6. Relacionar Productos con sus Especies (HU 11)
+INSERT INTO producto_especie (id_producto, id_especie) VALUES (1, 1); 
+INSERT INTO producto_especie (id_producto, id_especie) VALUES (2, 2); 
+
+COMMIT;

@@ -1,0 +1,18 @@
+----------* Vistas *-------------------------------
+
+--1.VW_PRODUCTOS_POR_ESPECIE
+
+CREATE OR REPLACE VIEW vw_productos_por_especie AS
+SELECT p.id_producto, p.nombre, p.marca, p.precio, p.existencias, e.nombre_especie
+FROM producto p
+JOIN producto_especie pe ON p.id_producto = pe.id_producto
+JOIN especie e ON pe.id_especie = e.id_especie;
+
+
+--2.VW_DETALLE_PEDIDOS_ZONAS
+
+CREATE OR REPLACE VIEW vw_detalle_pedidos_zonas AS
+SELECT ped.id_pedido, u.nombre || ' ' || u.apellidos AS cliente, z.nombre_zona, z.costo_envio, ped.fecha_entrega, ped.estado_pedido
+FROM pedido ped
+JOIN usuario u ON ped.id_usuario = u.id_usuario
+JOIN zona_cobertura z ON ped.id_zona = z.id_zona;
