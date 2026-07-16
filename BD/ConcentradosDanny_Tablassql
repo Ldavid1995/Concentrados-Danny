@@ -25,7 +25,6 @@ CREATE TABLE usuario (
     apellidos VARCHAR2(50) NOT NULL,
     correo VARCHAR2(50) NOT NULL UNIQUE,
     telefono VARCHAR2(20),
-    ruta_imagen VARCHAR2(1024),
     activo NUMBER(1) DEFAULT 1 CHECK (activo IN (0,1)),
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol)
         REFERENCES rol(id_rol)
@@ -100,8 +99,6 @@ CREATE TABLE producto (
     precio NUMBER(12,2) NOT NULL CHECK (precio >= 0),
     stock NUMBER NOT NULL CHECK (stock >= 0),
     stock_minimo NUMBER DEFAULT 5 CHECK (stock_minimo >= 0),
-    ficha_tecnica VARCHAR2(500),
-    imagen VARCHAR2(1024),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     activo NUMBER(1) DEFAULT 1 CHECK (activo IN (0,1)),
     CONSTRAINT fk_producto_categoria FOREIGN KEY (id_categoria)
@@ -146,9 +143,6 @@ CREATE TABLE lote (
 CREATE TABLE zona_cobertura (
     id_zona NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre_zona VARCHAR2(100) NOT NULL UNIQUE,
-    provincia VARCHAR2(50) NOT NULL,
-    canton VARCHAR2(50),
-    distrito VARCHAR2(50),
     descripcion VARCHAR2(255),
     costo_envio NUMBER(10,2) DEFAULT 0 CHECK (costo_envio >= 0),
     disponible NUMBER(1) DEFAULT 1 CHECK (disponible IN (0,1))
@@ -240,7 +234,30 @@ CREATE TABLE promocion (
 );
 
 /* ============================================================
-              16. Tabla Relacional Producto-Promoción
+                  16. Tabla Detalle de Pedido
+   ============================================================ */
+
+CREATE TABLE detalle_pedido (
+    id_detalle NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_pedido NUMBER NOT NULL,
+    id_producto NUMBER NOT NULL,
+    id_promocion NUMBER,
+    cantidad NUMBER NOT NULL CHECK (cantidad > 0),
+    precio_unitario NUMBER(10,2) NOT NULL CHECK (precio_unitario >= 0),
+    descuento NUMBER(10,2) DEFAULT 0 CHECK (descuento >= 0),
+    subtotal NUMBER(10,2) NOT NULL CHECK (subtotal >= 0),
+    UNIQUE(id_pedido,id_producto),
+    CONSTRAINT fk_detalle_pedido FOREIGN KEY (id_pedido)
+        REFERENCES pedido(id_pedido) ON DELETE CASCADE,
+    CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto)
+        REFERENCES producto(id_producto),
+    CONSTRAINT fk_detalle_promocion FOREIGN KEY (id_promocion)
+        REFERENCES promocion(id_promocion)
+);
+
+
+/* ============================================================
+              17. Tabla Relacional Producto-Promoción
    ============================================================ */
 
 CREATE TABLE producto_promocion (
@@ -254,18 +271,18 @@ CREATE TABLE producto_promocion (
 );
 
 /* ============================================================
-              17. Tabla de Reglas de Ración
+              18. Tabla de Reglas de Ración
    ============================================================ */
 
 CREATE TABLE regla_racion (
     id_regla NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_especie NUMBER NOT NULL,
-    peso_min NUMBER(6,2) NOT NULL,
-    peso_max NUMBER(6,2) NOT NULL,
-    edad_min NUMBER NOT NULL,
-    edad_max NUMBER NOT NULL,
-    cantidad_animales NUMBER DEFAULT 1,
-    porcion_diaria NUMBER(8,2) NOT NULL,
+    peso_min VARCHAR2(20) NOT NULL,
+    peso_max VARCHAR2(20) NOT NULL,
+    edad_min VARCHAR2(20) NOT NULL,
+    edad_max VARCHAR2(20) NOT NULL,
+    cantidad_animales VARCHAR2(30) NOT NULL,
+    porcion_diaria VARCHAR2(30) NOT NULL,
     observaciones VARCHAR2(255),
     activo NUMBER(1) DEFAULT 1 CHECK (activo IN (0,1)),
     CONSTRAINT fk_regla_especie FOREIGN KEY (id_especie)
@@ -273,7 +290,7 @@ CREATE TABLE regla_racion (
 );
 
 /* ============================================================
-                   18. Tabla de Reseñas
+                   19. Tabla de Reseñas
    ============================================================ */
 
 CREATE TABLE resena (
@@ -291,7 +308,7 @@ CREATE TABLE resena (
 );
 
 /* ============================================================
-                   19. Tabla de Facturas
+                   20. Tabla de Facturas
    ============================================================ */
 
 CREATE TABLE factura (
@@ -306,26 +323,20 @@ CREATE TABLE factura (
 );
 
 /* ============================================================
-                   20. Tabla Estado de Cuenta
+                   21. Tabla Estado de Cuenta
    ============================================================ */
 
 CREATE TABLE estado_cuenta (
     id_estado NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_usuario NUMBER NOT NULL,
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE NOT NULL,
-    saldo_anterior NUMBER(10,2) DEFAULT 0,
-    total_cargos NUMBER(10,2) DEFAULT 0,
-    total_pagos NUMBER(10,2) DEFAULT 0,
     saldo_actual NUMBER(10,2) DEFAULT 0,
     fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ruta_pdf VARCHAR2(500),
     CONSTRAINT fk_estado_usuario FOREIGN KEY (id_usuario)
         REFERENCES usuario(id_usuario)
 );
 
 /* ============================================================
-                   21. Tabla Lista de Deseos
+                   22. Tabla Lista de Deseos
    ============================================================ */
 
 CREATE TABLE lista_deseos (
@@ -341,7 +352,7 @@ CREATE TABLE lista_deseos (
 );
 
 /* ============================================================
-                   22. Tabla Alertas de Stock
+                   23. Tabla Alertas de Stock
    ============================================================ */
 
 CREATE TABLE alerta_stock (
@@ -349,13 +360,13 @@ CREATE TABLE alerta_stock (
     id_producto NUMBER NOT NULL,
     mensaje VARCHAR2(255) NOT NULL,
     fecha_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado VARCHAR2(20) DEFAULT 'PENDIENTE',
+    estado VARCHAR2(20) DEFAULT 'PENDIENTE' NOT NULL,
     CONSTRAINT fk_alerta_producto FOREIGN KEY (id_producto)
-        REFERENCES producto(id_producto) ON DELETE CASCADE
+        REFERENCES producto(id_producto)
 );
 
 /* ============================================================
-                   23. Tabla Historial de Precios
+                   24. Tabla Historial de Precios
    ============================================================ */
 
 CREATE TABLE historial_precio (
@@ -370,7 +381,7 @@ CREATE TABLE historial_precio (
 );
 
 /* ============================================================
-                   24. Tabla Cotizaciones
+                   25. Tabla Cotizaciones
    ============================================================ */
 
 CREATE TABLE cotizacion (
@@ -389,7 +400,7 @@ CREATE TABLE cotizacion (
 );
 
 /* ============================================================
-                   25. Tabla Detalle de Cotización
+                   26. Tabla Detalle de Cotización
    ============================================================ */
 
 CREATE TABLE cotizacion_detalle (
