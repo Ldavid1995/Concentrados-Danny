@@ -224,17 +224,16 @@ COMMIT;
 ----------------------------------------
 -- 8. PRODUCTO_ESPECIE
 ----------------------------------------
-
 INSERT INTO producto_especie (id_producto, id_especie)VALUES (1, 1);
 INSERT INTO producto_especie (id_producto, id_especie)VALUES (2, 2);
 INSERT INTO producto_especie (id_producto, id_especie)VALUES (3, 3);
 INSERT INTO producto_especie (id_producto, id_especie)VALUES (4, 4);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (5, 5);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (6, 6);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (7, 7);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (8, 8);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (9, 9);
-INSERT INTO producto_especie (id_producto, id_especie)VALUES (10, 1);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (5, 6);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (6, 7);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (7, 8);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (8, 9);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (9, 1);
+INSERT INTO producto_especie (id_producto, id_especie)VALUES (10, 2);
 
 ----------------------------------------
 -- 9. LOTES
@@ -269,6 +268,23 @@ VALUES(9, 'LOT-009', DATE '2026-07-09', DATE '2027-07-09', 35, 1);
 
 INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
 VALUES(10, 'LOT-010', DATE '2026-07-10', DATE '2027-07-10', 40, 1);
+
+INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
+VALUES(1, 'LOT-011', DATE '2026-08-01', TRUNC(SYSDATE)+5, 10, 1);
+
+INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
+VALUES(2, 'LOT-012', DATE '2026-08-02', TRUNC(SYSDATE)+10, 8, 1);
+
+INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
+VALUES(3, 'LOT-013', DATE '2026-08-03', TRUNC(SYSDATE)+15, 12, 1);
+
+INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
+VALUES(4, 'LOT-014', DATE '2026-08-04', TRUNC(SYSDATE)+20, 15, 1);
+
+INSERT INTO lote(id_producto, numero_lote, fecha_ingreso, fecha_vencimiento, cantidad, activo)
+VALUES(5, 'LOT-015', DATE '2026-08-05', TRUNC(SYSDATE)+25, 9, 1);
+
+COMMIT;
 
 COMMIT;
 
