@@ -7,23 +7,24 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name="venta")
+@Table(name = "VENTA") // Ajustado a mayúsculas para Oracle
 public class Venta implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id_venta")
+    @Column(name = "ID_VENTA") // Ajustado a mayúsculas
     private Long idVenta;
     
-    @Column(name="id_usuario")
+    @Column(name = "ID_USUARIO") // Ajustado a mayúsculas
     private Long idUsuario;
     
+    @Column(name = "TOTAL")
     private Double total;
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="fecha")
+    @Column(name = "FECHA") // Ajustado a mayúsculas
     private Date fecha;
 
     public Venta() {

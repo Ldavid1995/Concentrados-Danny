@@ -35,7 +35,7 @@ public class RegistroController {
 
     // 3. Procesar el cambio de rol desde la tabla de gestión
     @PostMapping("/asignarRol")
-    public String asignarRol(@RequestParam("idUsuario") Integer idUsuario, 
+    public String asignarRol(@RequestParam("idUsuario") Long idUsuario, 
                              @RequestParam("nombreRol") String nombreRol) {
         
         usuarioService.asignarRol(idUsuario, nombreRol);

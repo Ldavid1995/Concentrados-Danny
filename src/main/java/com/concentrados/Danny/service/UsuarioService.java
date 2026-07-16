@@ -20,5 +20,5 @@ public interface UsuarioService {
     // Borrar un usuario
     public void delete(Usuario usuario);
 
-    public void asignarRol(Integer idUsuario, String nombreRol);
+    public void asignarRol(Long idUsuario, String nombreRol);
 }

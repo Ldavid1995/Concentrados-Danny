@@ -35,13 +35,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void save(Usuario usuario, boolean crearRolUser) {
         usuario = usuarioRepository.save(usuario);
         if (crearRolUser) {
-            this.asignarRol(usuario.getIdUsuario(), "ROLE_USER");
+            this.asignarRol(usuario.getIdUsuario().longValue(), "ROLE_USER");
         }
     }
 
     @Override
     @Transactional
-    public void asignarRol(Integer idUsuario, String nombreRol) {
+    public void asignarRol(Long idUsuario, String nombreRol) { 
         Rol rol = new Rol();
         rol.setNombre(nombreRol);
         rol.setIdUsuario(idUsuario);
