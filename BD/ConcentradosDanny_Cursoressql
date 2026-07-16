@@ -21,3 +21,349 @@ BEGIN
     CLOSE c_productos_bajos;
 END;
 /
+
+--2. SP_REPORTE_LOTES_POR_VENCER
+-- Recorre los lotes activos que vencen dentro de los próximos 30 días
+CREATE OR REPLACE PROCEDURE sp_reporte_lotes_por_vencer AS
+    CURSOR c_lotes_vencer IS
+        SELECT l.numero_lote, p.nombre, l.fecha_vencimiento, l.cantidad
+        FROM lote l
+        JOIN producto p ON p.id_producto = l.id_producto
+        WHERE l.activo = 1
+          AND l.fecha_vencimiento <= (SYSDATE + 30)
+        ORDER BY l.fecha_vencimiento;
+
+    v_numero_lote lote.numero_lote%TYPE;
+    v_nombre      producto.nombre%TYPE;
+    v_vencimiento lote.fecha_vencimiento%TYPE;
+    v_cantidad    lote.cantidad%TYPE;
+BEGIN
+    OPEN c_lotes_vencer;
+    LOOP
+        FETCH c_lotes_vencer INTO v_numero_lote, v_nombre, v_vencimiento, v_cantidad;
+        EXIT WHEN c_lotes_vencer%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('LOTE POR VENCER: ' || v_numero_lote ||
+                              ' | Producto: ' || v_nombre ||
+                              ' | Vence: ' || TO_CHAR(v_vencimiento, 'DD/MM/YYYY') ||
+                              ' | Cantidad: ' || v_cantidad);
+    END LOOP;
+    CLOSE c_lotes_vencer;
+END;
+/
+
+--3. SP_REPORTE_PEDIDOS_PENDIENTES
+-- Recorre los pedidos en estado PENDIENTE, mostrando cliente y total
+CREATE OR REPLACE PROCEDURE sp_reporte_pedidos_pendientes AS
+    CURSOR c_pedidos_pendientes IS
+        SELECT p.id_pedido, u.nombre || ' ' || u.apellidos AS cliente,
+               p.fecha_pedido, p.total
+        FROM pedido p
+        JOIN usuario u ON u.id_usuario = p.id_usuario
+        WHERE p.estado = 'PENDIENTE'
+        ORDER BY p.fecha_pedido;
+
+    v_id_pedido    pedido.id_pedido%TYPE;
+    v_cliente      VARCHAR2(101);
+    v_fecha_pedido pedido.fecha_pedido%TYPE;
+    v_total        pedido.total%TYPE;
+BEGIN
+    OPEN c_pedidos_pendientes;
+    LOOP
+        FETCH c_pedidos_pendientes INTO v_id_pedido, v_cliente, v_fecha_pedido, v_total;
+        EXIT WHEN c_pedidos_pendientes%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('PEDIDO #' || v_id_pedido ||
+                              ' | Cliente: ' || v_cliente ||
+                              ' | Fecha: ' || TO_CHAR(v_fecha_pedido, 'DD/MM/YYYY HH24:MI') ||
+                              ' | Total: ' || v_total);
+    END LOOP;
+    CLOSE c_pedidos_pendientes;
+END;
+/
+
+--4. SP_REPORTE_PRODUCTOS_SIN_MOVIMIENTO
+-- Recorre productos activos que no aparecen en ningún detalle_pedido
+CREATE OR REPLACE PROCEDURE sp_reporte_productos_sin_movimiento AS
+    CURSOR c_sin_movimiento IS
+        SELECT p.id_producto, p.nombre, p.stock
+        FROM producto p
+        WHERE p.activo = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM detalle_pedido dp
+              WHERE dp.id_producto = p.id_producto
+          );
+
+    v_id_producto producto.id_producto%TYPE;
+    v_nombre      producto.nombre%TYPE;
+    v_stock       producto.stock%TYPE;
+BEGIN
+    OPEN c_sin_movimiento;
+    LOOP
+        FETCH c_sin_movimiento INTO v_id_producto, v_nombre, v_stock;
+        EXIT WHEN c_sin_movimiento%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('SIN MOVIMIENTO: [' || v_id_producto || '] ' ||
+                              v_nombre || ' | Stock actual: ' || v_stock);
+    END LOOP;
+    CLOSE c_sin_movimiento;
+END;
+/
+
+--5. SP_REPORTE_ROLES_USUARIOS
+-- Cuenta cuántos usuarios tiene cada rol
+CREATE OR REPLACE PROCEDURE sp_reporte_roles_usuarios AS
+    CURSOR c_roles IS
+        SELECT r.nombre_rol, COUNT(u.id_usuario) AS total_usuarios
+        FROM rol r
+        LEFT JOIN usuario u ON u.id_rol = r.id_rol
+        GROUP BY r.nombre_rol;
+
+    v_nombre_rol rol.nombre_rol%TYPE;
+    v_total      NUMBER;
+BEGIN
+    OPEN c_roles;
+    LOOP
+        FETCH c_roles INTO v_nombre_rol, v_total;
+        EXIT WHEN c_roles%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('ROL: ' || v_nombre_rol || ' | Usuarios asignados: ' || v_total);
+    END LOOP;
+    CLOSE c_roles;
+END;
+/
+
+--6. SP_REPORTE_USUARIOS_INACTIVOS
+CREATE OR REPLACE PROCEDURE sp_reporte_usuarios_inactivos AS
+    CURSOR c_inactivos IS
+        SELECT id_usuario, nombre, apellidos, correo
+        FROM usuario
+        WHERE activo = 0;
+
+    v_id_usuario usuario.id_usuario%TYPE;
+    v_nombre     usuario.nombre%TYPE;
+    v_apellidos  usuario.apellidos%TYPE;
+    v_correo     usuario.correo%TYPE;
+BEGIN
+    OPEN c_inactivos;
+    LOOP
+        FETCH c_inactivos INTO v_id_usuario, v_nombre, v_apellidos, v_correo;
+        EXIT WHEN c_inactivos%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('USUARIO INACTIVO: [' || v_id_usuario || '] ' ||
+                              v_nombre || ' ' || v_apellidos || ' | Correo: ' || v_correo);
+    END LOOP;
+    CLOSE c_inactivos;
+END;
+/
+
+--7. SP_REPORTE_TOKENS_EXPIRADOS
+-- Tokens de recuperación vencidos que nunca se usaron
+CREATE OR REPLACE PROCEDURE sp_reporte_tokens_expirados AS
+    CURSOR c_tokens IS
+        SELECT t.token, u.correo, t.fecha_expiracion
+        FROM token_recuperacion t
+        JOIN usuario u ON u.id_usuario = t.id_usuario
+        WHERE t.usado = 0
+          AND t.fecha_expiracion < CURRENT_TIMESTAMP;
+
+    v_token      token_recuperacion.token%TYPE;
+    v_correo     usuario.correo%TYPE;
+    v_expiracion token_recuperacion.fecha_expiracion%TYPE;
+BEGIN
+    OPEN c_tokens;
+    LOOP
+        FETCH c_tokens INTO v_token, v_correo, v_expiracion;
+        EXIT WHEN c_tokens%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('TOKEN EXPIRADO: ' || v_token ||
+                              ' | Usuario: ' || v_correo ||
+                              ' | Venció: ' || TO_CHAR(v_expiracion, 'DD/MM/YYYY HH24:MI'));
+    END LOOP;
+    CLOSE c_tokens;
+END;
+/
+
+--8. SP_REPORTE_DIRECCIONES_USUARIO
+-- Direcciones activas registradas por cliente
+CREATE OR REPLACE PROCEDURE sp_reporte_direcciones_usuario AS
+    CURSOR c_direcciones IS
+        SELECT u.nombre || ' ' || u.apellidos AS cliente,
+               d.direccion, d.provincia, d.canton
+        FROM direccion d
+        JOIN usuario u ON u.id_usuario = d.id_usuario
+        WHERE d.activo = 1;
+
+    v_cliente   VARCHAR2(101);
+    v_direccion direccion.direccion%TYPE;
+    v_provincia direccion.provincia%TYPE;
+    v_canton    direccion.canton%TYPE;
+BEGIN
+    OPEN c_direcciones;
+    LOOP
+        FETCH c_direcciones INTO v_cliente, v_direccion, v_provincia, v_canton;
+        EXIT WHEN c_direcciones%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('CLIENTE: ' || v_cliente ||
+                              ' | Dirección: ' || v_direccion ||
+                              ' | ' || v_canton || ', ' || v_provincia);
+    END LOOP;
+    CLOSE c_direcciones;
+END;
+/
+
+--9. SP_REPORTE_CATEGORIAS_SIN_PRODUCTOS
+-- Categorías activas que no tienen ningún producto asociado
+CREATE OR REPLACE PROCEDURE sp_reporte_categorias_sin_productos AS
+    CURSOR c_categorias IS
+        SELECT c.id_categoria, c.nombre_categoria
+        FROM categoria c
+        WHERE c.activo = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM producto p WHERE p.id_categoria = c.id_categoria
+          );
+
+    v_id_categoria   categoria.id_categoria%TYPE;
+    v_nombre_cat     categoria.nombre_categoria%TYPE;
+BEGIN
+    OPEN c_categorias;
+    LOOP
+        FETCH c_categorias INTO v_id_categoria, v_nombre_cat;
+        EXIT WHEN c_categorias%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('CATEGORÍA SIN PRODUCTOS: [' || v_id_categoria || '] ' || v_nombre_cat);
+    END LOOP;
+    CLOSE c_categorias;
+END;
+/
+
+--10. SP_REPORTE_ESPECIES_PRODUCTOS
+-- Cantidad de productos asociados a cada especie
+CREATE OR REPLACE PROCEDURE sp_reporte_especies_productos AS
+    CURSOR c_especies IS
+        SELECT e.nombre_especie, COUNT(pe.id_producto) AS total_productos
+        FROM especie e
+        LEFT JOIN producto_especie pe ON pe.id_especie = e.id_especie
+        GROUP BY e.nombre_especie;
+
+    v_nombre_especie especie.nombre_especie%TYPE;
+    v_total          NUMBER;
+BEGIN
+    OPEN c_especies;
+    LOOP
+        FETCH c_especies INTO v_nombre_especie, v_total;
+        EXIT WHEN c_especies%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('ESPECIE: ' || v_nombre_especie || ' | Productos asociados: ' || v_total);
+    END LOOP;
+    CLOSE c_especies;
+END;
+/
+
+--11. SP_REPORTE_ZONAS_DISPONIBLES
+CREATE OR REPLACE PROCEDURE sp_reporte_zonas_disponibles AS
+    CURSOR c_zonas IS
+        SELECT nombre_zona, costo_envio
+        FROM zona_cobertura
+        WHERE disponible = 1;
+
+    v_nombre_zona  zona_cobertura.nombre_zona%TYPE;
+    v_costo_envio  zona_cobertura.costo_envio%TYPE;
+BEGIN
+    OPEN c_zonas;
+    LOOP
+        FETCH c_zonas INTO v_nombre_zona, v_costo_envio;
+        EXIT WHEN c_zonas%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('ZONA DISPONIBLE: ' || v_nombre_zona || ' | Costo envío: ' || v_costo_envio);
+    END LOOP;
+    CLOSE c_zonas;
+END;
+/
+
+--12. SP_REPORTE_HORARIOS_ACTIVOS
+CREATE OR REPLACE PROCEDURE sp_reporte_horarios_activos AS
+    CURSOR c_horarios IS
+        SELECT nombre_horario, hora_inicio, hora_fin, cupo_maximo
+        FROM horario_entrega
+        WHERE activo = 1;
+
+    v_nombre_horario horario_entrega.nombre_horario%TYPE;
+    v_hora_inicio    horario_entrega.hora_inicio%TYPE;
+    v_hora_fin       horario_entrega.hora_fin%TYPE;
+    v_cupo_maximo    horario_entrega.cupo_maximo%TYPE;
+BEGIN
+    OPEN c_horarios;
+    LOOP
+        FETCH c_horarios INTO v_nombre_horario, v_hora_inicio, v_hora_fin, v_cupo_maximo;
+        EXIT WHEN c_horarios%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('HORARIO: ' || v_nombre_horario ||
+                              ' | ' || v_hora_inicio || ' - ' || v_hora_fin ||
+                              ' | Cupo máximo: ' || v_cupo_maximo);
+    END LOOP;
+    CLOSE c_horarios;
+END;
+/
+
+--13. SP_REPORTE_CUPONES_VIGENTES
+CREATE OR REPLACE PROCEDURE sp_reporte_cupones_vigentes AS
+    CURSOR c_cupones IS
+        SELECT codigo, descuento, fecha_vence
+        FROM cupon
+        WHERE activo = 1
+          AND fecha_vence >= TRUNC(SYSDATE);
+
+    v_codigo      cupon.codigo%TYPE;
+    v_descuento   cupon.descuento%TYPE;
+    v_fecha_vence cupon.fecha_vence%TYPE;
+BEGIN
+    OPEN c_cupones;
+    LOOP
+        FETCH c_cupones INTO v_codigo, v_descuento, v_fecha_vence;
+        EXIT WHEN c_cupones%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('CUPÓN VIGENTE: ' || v_codigo ||
+                              ' | Descuento: ' || v_descuento || '%' ||
+                              ' | Vence: ' || TO_CHAR(v_fecha_vence, 'DD/MM/YYYY'));
+    END LOOP;
+    CLOSE c_cupones;
+END;
+/
+
+--14. SP_REPORTE_PAGOS_PENDIENTES
+CREATE OR REPLACE PROCEDURE sp_reporte_pagos_pendientes AS
+    CURSOR c_pagos IS
+        SELECT id_pago, id_pedido, metodo_pago, monto
+        FROM pago
+        WHERE estado_pago = 'PENDIENTE';
+
+    v_id_pago     pago.id_pago%TYPE;
+    v_id_pedido   pago.id_pedido%TYPE;
+    v_metodo_pago pago.metodo_pago%TYPE;
+    v_monto       pago.monto%TYPE;
+BEGIN
+    OPEN c_pagos;
+    LOOP
+        FETCH c_pagos INTO v_id_pago, v_id_pedido, v_metodo_pago, v_monto;
+        EXIT WHEN c_pagos%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('PAGO PENDIENTE: #' || v_id_pago ||
+                              ' | Pedido: #' || v_id_pedido ||
+                              ' | Método: ' || v_metodo_pago ||
+                              ' | Monto: ' || v_monto);
+    END LOOP;
+    CLOSE c_pagos;
+END;
+/
+
+--15. SP_REPORTE_PROMOCIONES_VIGENTES
+CREATE OR REPLACE PROCEDURE sp_reporte_promociones_vigentes AS
+    CURSOR c_promos IS
+        SELECT nombre, porcentaje_descuento, fecha_fin
+        FROM promocion
+        WHERE activo = 1
+          AND TRUNC(SYSDATE) BETWEEN fecha_inicio AND fecha_fin;
+
+    v_nombre      promocion.nombre%TYPE;
+    v_descuento   promocion.porcentaje_descuento%TYPE;
+    v_fecha_fin   promocion.fecha_fin%TYPE;
+BEGIN
+    OPEN c_promos;
+    LOOP
+        FETCH c_promos INTO v_nombre, v_descuento, v_fecha_fin;
+        EXIT WHEN c_promos%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('PROMOCIÓN VIGENTE: ' || v_nombre ||
+                              ' | Descuento: ' || v_descuento || '%' ||
+                              ' | Finaliza: ' || TO_CHAR(v_fecha_fin, 'DD/MM/YYYY'));
+    END LOOP;
+    CLOSE c_promos;
+END;
+/
