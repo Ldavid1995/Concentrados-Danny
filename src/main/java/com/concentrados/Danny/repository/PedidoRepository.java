@@ -18,6 +18,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
         @Param("p_id_zona") Long idZona,
         @Param("p_fecha_entrega") Date fechaEntrega,
         @Param("p_hora_entrega") String horaEntrega,
-        @Param("p_direccion") String direccion
+        @Param("p_id_direccion") Long direccion
     );
 }
