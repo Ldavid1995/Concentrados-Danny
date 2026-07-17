@@ -33,9 +33,9 @@ public class Pedido implements Serializable {
     @Column(name = "HORA_ENTREGA")
     private String horaEntrega;
     
-    @Column(name = "DIRECCION")
-    private String direccion;
+    @Column(name = "ID_DIRECCION")
+    private Long idDireccion;
     
-    @Column(name = "ESTADO_PEDIDO")
-    private String estadoPedido;
+    @Column(name = "ESTADO")
+    private String estado;
 }
