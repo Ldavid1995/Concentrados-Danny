@@ -24,7 +24,7 @@ public class Usuario implements Serializable {
     
     private String telefono;
     
-    @Column(name = "ruta_imagen")
+    @Transient
     private String rutaImagen;
     
     private boolean activo;

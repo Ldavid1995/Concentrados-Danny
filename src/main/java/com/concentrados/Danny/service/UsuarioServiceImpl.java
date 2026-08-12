@@ -4,6 +4,7 @@ import com.concentrados.Danny.repository.UsuarioRepository;
 import com.concentrados.Danny.repository.RolRepository;     
 import com.concentrados.Danny.domain.Usuario;
 import com.concentrados.Danny.domain.Rol;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,10 +34,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public void save(Usuario usuario, boolean crearRolUser) {
-        usuario = usuarioRepository.save(usuario);
         if (crearRolUser) {
-            this.asignarRol(usuario.getIdUsuario().longValue(), "ROLE_USER");
+            Rol rolUser = new Rol();
+            rolUser.setNombre("ROLE_USER");
+            
+            if (usuario.getRoles() == null) {
+                usuario.setRoles(new ArrayList<>());
+            }
+            usuario.getRoles().add(rolUser);
         }
+        
+        // Se guarda el usuario con la relación cargada en memoria
+        usuarioRepository.save(usuario);
     }
 
     @Override

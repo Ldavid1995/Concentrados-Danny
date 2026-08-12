@@ -31,7 +31,7 @@ public class SecurityConfig {
 
                 // 2. Rutas Públicas
                 .requestMatchers("/", "/index", "/login", "/registro/**").permitAll()
-                .requestMatchers("/producto/listado/**", "/producto/calculadora", "/carrito/**").permitAll()
+                .requestMatchers("/producto/listado", "/producto/listado/**", "/producto/calculadora", "/producto/cobertura", "/carrito/**").permitAll()
 
                 // 3. Reportes y Cotizaciones (Permitido para USER, VENDEDOR y ADMIN)
                 .requestMatchers("/reporte/**").hasAnyRole("ADMIN", "VENDEDOR", "USER")
