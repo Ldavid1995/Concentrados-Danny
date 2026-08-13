@@ -1,8 +1,10 @@
 package com.concentrados.Danny.controller;
 
+import com.concentrados.Danny.domain.Item;
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.service.ProductoService;
 import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -130,9 +132,16 @@ public String verCarrito(Model model, HttpSession session) {
             .filter(item -> item.getProducto() != null)
             .collect(Collectors.toList());
 
-    double total = items.stream()
-            .mapToDouble(item -> item.getProducto().getPrecio() * item.getCantidad())
-            .sum();
+
+   // Para calcular el total acumulado de una lista de elementos 'items':
+BigDecimal total = BigDecimal.ZERO;
+    for (ItemCarrito item : items) { // Ajusta 'Item' al nombre de tu clase/entidad de lista de deseos
+        if (item.getProducto() != null && item.getProducto().getPrecio() != null) {
+            BigDecimal subtotal = item.getProducto().getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()));
+            total = total.add(subtotal);
+        }
+    }
+    model.addAttribute("total", total);
 
     model.addAttribute("items", items);
     model.addAttribute("total", total);

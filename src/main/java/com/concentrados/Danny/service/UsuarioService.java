@@ -4,21 +4,18 @@ import com.concentrados.Danny.domain.Usuario;
 import java.util.List;
 
 public interface UsuarioService {
-    
-    // Obtener la lista de todos los usuarios para la gestión de roles
-    public List<Usuario> getUsuarios();
-    
-    // Obtener un usuario por su ID
-    public Usuario getUsuario(Usuario usuario);
-    
-    // Guarda el usuario y gestiona sus roles
-    public void save(Usuario usuario, boolean crearRolUser);
-    
-    // Para verificar si el usuario ya existe antes de registrarlo
-    public Usuario getUsuarioPorUsername(String username);
-    
-    // Borrar un usuario
-    public void delete(Usuario usuario);
 
-    public void asignarRol(Long idUsuario, String nombreRol);
+    List<Usuario> getUsuarios();
+
+    Usuario getUsuario(Usuario usuario);
+
+    Usuario getUsuarioPorUsername(String username);
+
+    Usuario getUsuarioPorUsernameOCorreo(String username, String correo);
+
+    void save(Usuario usuario, boolean crearRolUser);
+
+    void delete(Usuario usuario);
+    
+    void asignarRol(Long idUsuario, String nombreRol);
 }

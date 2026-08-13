@@ -1,11 +1,15 @@
 package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.domain.Item;
+import com.concentrados.Danny.domain.Producto;
+import com.concentrados.Danny.repository.ProductoRepository;
 import jakarta.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -13,8 +17,12 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private HttpSession session;
 
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    @SuppressWarnings("unchecked")
     @Override
-    public List<Item> gets() {
+    public List<Item> getItems() {
         List<Item> listaItems = (List<Item>) session.getAttribute("listaItems");
         if (listaItems == null) {
             listaItems = new ArrayList<>();
@@ -24,36 +32,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public void save(Item item) {
-        boolean existe = false;
-        List<Item> lista = gets(); 
-
+    public Item getItem(Item item) {
+        List<Item> lista = getItems();
         for (Item i : lista) {
-            if (i.getIdProducto().equals(item.getIdProducto())) {
-                i.setCantidad(i.getCantidad() + item.getCantidad());
-                existe = true;
-                break;
-            }
-        }
-
-        if (!existe) {
-            lista.add(item);
-        }
-
-        session.setAttribute("listaItems", lista);
-    }
-
-    @Override
-    public void delete(Item item) {
-        List<Item> listaItems = gets();
-        listaItems.removeIf(i -> i.getIdProducto().equals(item.getIdProducto()));
-        session.setAttribute("listaItems", listaItems);
-    }
-
-    @Override
-    public Item get(Item item) {
-        List<Item> listaItems = gets();
-        for (Item i : listaItems) {
             if (i.getIdProducto().equals(item.getIdProducto())) {
                 return i;
             }
@@ -62,24 +43,68 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public void save(Item item) {
+        List<Item> lista = getItems();
+        boolean existe = false;
+
+        for (Item i : lista) {
+            if (i.getIdProducto().equals(item.getIdProducto())) {
+                existe = true;
+                if (i.getCantidad() < i.getStock()) {
+                    i.setCantidad(i.getCantidad() + 1);
+                }
+                break;
+            }
+        }
+
+        if (!existe) {
+            Producto producto = productoRepository.findById(item.getIdProducto()).orElse(null);
+            if (producto != null) {
+                Item nuevoItem = new Item(producto);
+                nuevoItem.setCantidad(1);
+                lista.add(nuevoItem);
+            }
+        }
+        session.setAttribute("listaItems", lista);
+    }
+
+    @Override
+    public void delete(Item item) {
+        List<Item> lista = getItems();
+        lista.removeIf(i -> i.getIdProducto().equals(item.getIdProducto()));
+        session.setAttribute("listaItems", lista);
+    }
+
+    @Override
     public void update(Item item) {
-        List<Item> listaItems = gets();
-        for (Item i : listaItems) {
+        List<Item> lista = getItems();
+        for (Item i : lista) {
             if (i.getIdProducto().equals(item.getIdProducto())) {
                 i.setCantidad(item.getCantidad());
                 break;
             }
         }
-        session.setAttribute("listaItems", listaItems);
+        session.setAttribute("listaItems", lista);
+    }
+
+    @Override
+    public void clear() {
+        session.removeAttribute("listaItems");
     }
 
     @Override
     public double getTotal() {
-        double total = 0;
-        List<Item> listaItems = gets();
-        for (Item i : listaItems) {
-            total += (i.getPrecio() * i.getCantidad());
+        List<Item> lista = getItems();
+        BigDecimal total = BigDecimal.ZERO;
+        for (Item i : lista) {
+            total = total.add(i.getSubTotal());
         }
-        return total;
+        return total.doubleValue();
+    }
+
+    @Override
+    public void facturar() {
+        // La lógica de rebajo de inventario y generación de venta se orquesta desde VentaController / Facturacion
+        clear();
     }
 }

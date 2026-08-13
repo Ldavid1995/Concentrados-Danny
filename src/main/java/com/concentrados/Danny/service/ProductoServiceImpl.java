@@ -2,12 +2,14 @@ package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.repository.ProductoRepository;
-import com.concentrados.Danny.service.ProductoService;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
@@ -17,57 +19,55 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Producto> obtenerTodos() { 
+    public List<Producto> listarProductos() {
         return productoRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Producto> buscarPorPalabra(String keyword) { 
-        return productoRepository.findByKeyword(keyword);
+    public Producto obtenerPorId(Long id) {
+        return productoRepository.findById(id).orElse(null);
     }
 
     @Override
     @Transactional
-    public void save(Producto producto) {
-        productoRepository.save(producto);
-    }
-
-    @Override
-    @Transactional
-    public void delete(Producto producto) {
-        productoRepository.delete(producto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Producto getProducto(Producto producto) {
-        return productoRepository.findById(producto.getIdProducto()).orElse(null);
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Object[]> obtenerStockPorMarca() {
-        List<Producto> productos = productoRepository.findAll();
+    public Long guardarProductoPLSQL(Producto producto, Long idCategoria) {
+        Double precioDouble = producto.getPrecio() != null ? producto.getPrecio().doubleValue() : 0.0;
         
-        return productos.stream()
-            .filter(p -> p.getMarca() != null && !p.getMarca().isEmpty())
-            .collect(Collectors.groupingBy(
-                Producto::getMarca, 
-                Collectors.summingInt(Producto::getExistencias)
-            ))
-            .entrySet().stream()
-            .map(e -> new Object[]{e.getKey(), e.getValue()})
-            .collect(Collectors.toList());
+        return productoRepository.crearProducto(
+            producto.getNombreProducto(),
+            producto.getDescripcion(),
+            precioDouble,
+            producto.getStock(),
+            idCategoria
+        );
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Double calcularValorInventario() {
-        List<Producto> productos = productoRepository.findAll();
-        return productos.stream()
-            .mapToDouble(p -> p.getPrecio() * p.getExistencias())
-            .sum();
+    @Transactional
+    public void eliminarProducto(Long id) {
+        productoRepository.deleteById(id);
+    }
+    @Override
+@Transactional(readOnly = true)
+public Map<String, Integer> obtenerStockPorMarca() {
+    List<Producto> lista = productoRepository.findAll();
+    Map<String, Integer> resumen = new HashMap<>();
+    for (Producto p : lista) {
+        String marca = (p.getMarca() != null && !p.getMarca().isBlank()) ? p.getMarca() : "Sin Marca";
+        int stock = p.getStock() != null ? p.getStock() : 0;
+        resumen.put(marca, resumen.getOrDefault(marca, 0) + stock);
+    }
+    return resumen;
+}
+
+    @Override
+    public Producto getProducto(Producto Producto) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public BigDecimal calcularValorInventario() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

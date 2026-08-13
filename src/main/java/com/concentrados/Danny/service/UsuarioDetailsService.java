@@ -1,70 +1,41 @@
 package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.domain.Usuario;
+import com.concentrados.Danny.domain.Rol;
 import com.concentrados.Danny.repository.UsuarioRepository;
-import jakarta.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service("userDetailsService")
 public class UsuarioDetailsService implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final HttpSession session;
-
-    public UsuarioDetailsService(UsuarioRepository usuarioRepository, HttpSession session) {
-        this.usuarioRepository = usuarioRepository;
-        this.session = session;
-    }
+    @Autowired
+    private UsuarioRepository usuarioDao;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Buscamos el usuario en la base de datos
-        Usuario usuario = usuarioRepository.findByUsernameAndActivoTrue(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        Usuario usuario = usuarioDao.findByUsername(username);
 
-        // 2. Mapeamos los roles con limpieza de prefijos
-        List<GrantedAuthority> roles = new ArrayList<>();
-        if (usuario.getRoles() != null) {
-            usuario.getRoles().forEach(rol -> {
-                String nombreRaw = rol.getNombre().toUpperCase();
-                
-                // Normalizamos: Si en la DB dice "ROLE_ADMIN", extraemos "ADMIN"
-                String soloNombre = nombreRaw.startsWith("ROLE_") ? nombreRaw.substring(5) : nombreRaw;
-                
-                // Agregamos la autoridad con el formato estándar ROLE_ para hasRole()
-                roles.add(new SimpleGrantedAuthority("ROLE_" + soloNombre));
-                
-                // Agregamos la autoridad sin prefijo por si acaso usas hasAuthority()
-                roles.add(new SimpleGrantedAuthority(soloNombre));
-            });
+        if (usuario == null) {
+            throw new UsernameNotFoundException("Usuario no encontrado: " + username);
         }
 
-        // 3. LOGS DE SEGURIDAD (Revisa esto en tu consola de NetBeans)
-        System.out.println("==================================================");
-        System.out.println("USUARIO LOGUEADO: " + username);
-        System.out.println("ROLES CARGADOS: " + roles); // Aquí DEBE aparecer ROLE_ADMIN
-        System.out.println("==================================================");
+        List<GrantedAuthority> roles = new ArrayList<>();
 
-        // 4. Datos para la interfaz (Header/Index)
-        session.setAttribute("usuarioNombre", usuario.getNombre() + " " + usuario.getApellidos());
-        session.setAttribute("usuarioImagen", usuario.getRutaImagen());
-        session.setAttribute("username", usuario.getUsername());
+        // Se obtiene el rol único y se agrega a las autoridades de Spring Security
+        Rol rol = usuario.getRol();
+        if (rol != null && rol.getNombre() != null) {
+            roles.add(new SimpleGrantedAuthority(rol.getNombre()));
+        }
 
-        // 5. Retornamos el User (comparación de texto plano)
-        return new User(
-                usuario.getUsername(),
-                usuario.getPassword(),
-                roles
-        );
+        return new User(usuario.getUsername(), usuario.getPassword(), roles);
     }
 }

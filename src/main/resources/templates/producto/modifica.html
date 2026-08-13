@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Modificar Producto</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 mb-5">
         <div class="card shadow">
             <div class="card-header bg-success text-white">
                 <h4>Modificar Concentrado</h4>
@@ -13,22 +15,23 @@
             <div class="card-body">
                 <form th:action="@{/producto/guardar}" th:object="${producto}" method="POST" enctype="multipart/form-data">
                     
-                    <input type="hidden" name="idProducto" th:field="*{idProducto}"/>
-                    
-                    <input type="hidden" name="fichaTecnica" th:field="*{fichaTecnica}"/>
+                    <!-- Campos Ocultos -->
+                    <input type="hidden" th:field="*{idProducto}"/>
+                    <input type="hidden" th:field="*{fichaTecnica}"/>
 
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
-                        <input type="text" name="nombre" th:field="*{nombre}" class="form-control" required/>
+                        <input type="text" th:field="*{nombre}" class="form-control" required/>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Marca</label>
-                        <input type="text" name="marca" th:field="*{marca}" class="form-control" placeholder="Ej: Mimados, Aguilar..."/>
+                        <input type="text" th:field="*{marca}" class="form-control" placeholder="Ej: Mimados, Aguilar..."/>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Especie</label>
-                        <select name="especie" th:field="*{especie}" class="form-select">
+                        <select th:field="*{especie}" class="form-select">
                             <option value="Perros">Perros</option>
                             <option value="Gatos">Gatos</option>
                             <option value="Aves">Aves</option>
@@ -40,7 +43,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Unidad de Medida</label>
-                        <select name="unidadMedida" th:field="*{unidadMedida}" class="form-select">
+                        <select th:field="*{unidadMedida}" class="form-select">
                             <option value="Saco">Saco</option>
                             <option value="Kilo">Kilo</option>
                             <option value="Unidad">Unidad</option>
@@ -49,13 +52,14 @@
 
                     <div class="mb-3">
                         <label class="form-label">Precio (₡)</label>
-                        <input type="number" name="precio" th:field="*{precio}" class="form-control" step="0.01" required/>
+                        <input type="number" th:field="*{precio}" class="form-control" step="0.01" required/>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Existencias</label>
-                        <input type="number" name="existencias" th:field="*{existencias}" class="form-control" required/>
+                        <input type="number" th:field="*{existencias}" class="form-control" required/>
                     </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Número de Lote</label>
@@ -72,24 +76,25 @@
                             </div>
                         </div>
                     </div>
-                   
 
                     <div class="mb-4">
                         <label for="archivoFicha" class="form-label fw-bold">Actualizar Ficha Técnica</label>
-                        <input class="form-control" type="file" name="archivoFicha" id="archivoFicha">
+                        <input class="form-control" type="file" name="archivoFicha" id="archivoFicha" />
+                        
                         <div th:if="${producto.fichaTecnica != null}" class="form-text text-primary">
                             Ficha actual: <span th:text="${producto.fichaTecnica}"></span>
                         </div>
-                  
-                            <div class="d-flex justify-content-between">
-<a th:href="@{/producto/listado(especie=${producto.especie})}" class="btn btn-secondary">
-    Regresar
-</a>
+                    </div>
 
-                                <button type="submit" class="btn btn-success">
-                                    Actualizar Cambios
-                                </button>
-                            </div>
+                    <div class="d-flex justify-content-between">
+                        <a th:href="@{/producto/listado(especie=${producto.especie})}" class="btn btn-secondary">
+                            Regresar
+                        </a>
+
+                        <button type="submit" class="btn btn-success">
+                            Actualizar Cambios
+                        </button>
+                    </div>
 
                 </form>
             </div>

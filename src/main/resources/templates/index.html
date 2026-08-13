@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> 
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Concentrados Danny - Inicio</title>
     <meta charset="UTF-8"/>
@@ -156,7 +155,7 @@
             </div>
             <div class="row copyright text-center">
                 <div class="col">
-                    <p>Concentrados Danny © [[${#dates.format(#dates.createNow(), 'yyyy')}]] - Todos los derechos reservados</p>
+                    <p>Concentrados Danny © <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span> - Todos los derechos reservados</p>
                 </div>
             </div>
         </div>

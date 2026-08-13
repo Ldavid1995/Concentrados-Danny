@@ -1,13 +1,13 @@
 package com.concentrados.Danny.repository;
 
-import com.concentrados.Danny.domain.Venta;
+import com.concentrados.Danny.domain.Especie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface VentaRepository extends JpaRepository<Venta, Long> {
+public interface EspecieRepository extends JpaRepository<Especie, Long> {
 
-    List<Venta> findByIdFactura(Long idFactura);
+    List<Especie> findByActivo(Integer activo);
 }

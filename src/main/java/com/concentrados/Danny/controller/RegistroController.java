@@ -28,19 +28,20 @@ public class RegistroController {
     // 2. Procesar la creación de un nuevo usuario
     @PostMapping("/crear")
     public String crearUsuario(@ModelAttribute Usuario usuario) {
-        usuario.setActivo(true);
+        usuario.setActivo(1);
         usuarioService.save(usuario, true); 
         return "redirect:/login?registroExitoso=true";
     }
 
     // 3. Procesar el cambio de rol desde la tabla de gestión
-    @PostMapping("/asignarRol")
-    public String asignarRol(@RequestParam("idUsuario") Long idUsuario, 
-                             @RequestParam("nombreRol") String nombreRol) {
-        
-        usuarioService.asignarRol(idUsuario, nombreRol);
-        return "redirect:/registro/usuarios"; 
-    }
+
+@PostMapping("/asignarRol")
+public String asignarRol(@RequestParam("idUsuario") Long idUsuario,
+                         @RequestParam("nombreRol") String nombreRol) {
+
+    usuarioService.asignarRol(idUsuario, nombreRol);
+    return "redirect:/registro/usuarios";
+}
 
     // 4. Listado de usuarios (Solo accesible para ADMIN según tu SecurityConfig)
     @GetMapping("/usuarios")

@@ -1,21 +1,21 @@
 package com.concentrados.Danny.service;
 
-import com.concentrados.Danny.repository.UsuarioRepository; 
-import com.concentrados.Danny.repository.RolRepository;     
+import com.concentrados.Danny.repository.UsuarioRepository;
+import com.concentrados.Danny.repository.RolRepository;
 import com.concentrados.Danny.domain.Usuario;
 import com.concentrados.Danny.domain.Rol;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
     @Autowired
     private RolRepository rolRepository;
 
@@ -32,29 +32,25 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Transactional
-    public void save(Usuario usuario, boolean crearRolUser) {
-        if (crearRolUser) {
-            Rol rolUser = new Rol();
-            rolUser.setNombre("ROLE_USER");
-            
-            if (usuario.getRoles() == null) {
-                usuario.setRoles(new ArrayList<>());
-            }
-            usuario.getRoles().add(rolUser);
-        }
-        
-        // Se guarda el usuario con la relación cargada en memoria
-        usuarioRepository.save(usuario);
+    @Transactional(readOnly = true)
+    public Usuario getUsuarioPorUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Usuario getUsuarioPorUsernameOCorreo(String username, String correo) {
+        return usuarioRepository.findByUsernameOrCorreo(username, correo);
     }
 
     @Override
     @Transactional
-    public void asignarRol(Long idUsuario, String nombreRol) { 
-        Rol rol = new Rol();
-        rol.setNombre(nombreRol);
-        rol.setIdUsuario(idUsuario);
-        rolRepository.save(rol);
+    public void save(Usuario usuario, boolean crearRolUser) {
+        if (crearRolUser) {
+            Rol rolDefault = rolRepository.findById(2L).orElse(null);
+            usuario.setRol(rolDefault);
+        }
+        usuarioRepository.save(usuario);
     }
 
     @Override
@@ -64,8 +60,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Usuario getUsuarioPorUsername(String username) {
-        return usuarioRepository.findByUsernameAndActivoTrue(username).orElse(null);
+    @Transactional
+    public void asignarRol(Long idUsuario, String nombreRol) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        if (usuario != null) {
+            Rol rol = new Rol();
+            rol.setNombre(nombreRol);
+            rol = rolRepository.save(rol);
+            usuario.setRol(rol);
+            usuarioRepository.save(usuario);
+        }
     }
 }
