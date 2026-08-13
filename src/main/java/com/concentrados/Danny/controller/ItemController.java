@@ -9,6 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Controller
 @RequestMapping("/carrito")
 public class ItemController {
@@ -19,35 +22,82 @@ public class ItemController {
     @Autowired
     private ProductoService productoService;
 
+    // Listar productos del carrito
     @GetMapping("/listado")
     public String inicio(Model model) {
-        var items = itemService.getItems();
+        List<Item> items = itemService.getItems();
         model.addAttribute("items", items);
-        model.addAttribute("totalCarrito", itemService.getTotal());
+        
+        // Calcular el total recorriendo la lista de ítems usando BigDecimal
+        BigDecimal total = BigDecimal.ZERO;
+        if (items != null) {
+            for (Item i : items) {
+                if (i.getPrecio() != null) {
+                    BigDecimal subtotalItem = BigDecimal.valueOf(i.getPrecio() * i.getCantidad());
+                    total = total.add(subtotalItem);
+                }
+            }
+        }
+        model.addAttribute("totalCarrito", total);
         return "/carrito/listado";
     }
 
+    // Método auxiliar para calcular el Subtotal usando BigDecimal
+    public BigDecimal calcularSubtotal(Item item) {
+        if (item != null && item.getPrecio() != null) {
+            return BigDecimal.valueOf(item.getPrecio() * item.getCantidad());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    // Agregar producto al carrito por ID
     @GetMapping("/agregar/{idProducto}")
-    public String agregar(@PathVariable("idProducto") Long idProducto) {
-        Producto producto = productoService.obtenerPorId(idProducto);
+    public String agregarItem(@PathVariable("idProducto") Long idProducto) {
+        Item item = new Item();
+        
+        // Creamos la instancia de Producto con el ID para consultar el Servicio
+        Producto p = new Producto();
+        p.setIdProducto(idProducto);
+        
+        // Obtenemos el Producto completo desde la base de datos
+        Producto producto = productoService.getProducto(p); 
+        
         if (producto != null) {
-            Item item = new Item(producto);
+            // Copiamos los atributos del producto al Item
+            item.setIdProducto(producto.getIdProducto());
+            item.setNombre(producto.getNombre());
+            item.setDescripcion(producto.getDescripcion());
+            item.setPrecio(producto.getPrecio());
+            item.setCantidad(1);
+            
             itemService.save(item);
         }
+
         return "redirect:/carrito/listado";
     }
 
+    // Eliminar producto del carrito
     @GetMapping("/eliminar/{idProducto}")
-    public String eliminar(@PathVariable("idProducto") Long idProducto) {
+    public String eliminarItem(@PathVariable("idProducto") Long idProducto) {
         Item item = new Item();
         item.setIdProducto(idProducto);
         itemService.delete(item);
         return "redirect:/carrito/listado";
     }
 
-    @PostMapping("/modificar")
-    public String modificar(Item item) {
-        itemService.update(item);
+    // Actualizar cantidad desde el input del carrito
+    @PostMapping("/actualizar")
+    public String actualizarCantidad(@RequestParam("idProducto") Long idProducto, 
+                                     @RequestParam("cantidad") int cantidad) {
+        Item item = new Item();
+        item.setIdProducto(idProducto);
+        Item existe = itemService.getItem(item);
+        
+        if (existe != null) {
+            existe.setCantidad(cantidad);
+            itemService.save(existe);
+        }
+        
         return "redirect:/carrito/listado";
     }
 }

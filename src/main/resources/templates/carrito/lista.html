@@ -1,120 +1,153 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" 
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{general/fragmentos :: head}">
+<head>
+    <th:block th:replace="~{general/fragmentos :: head}"></th:block>
     <title>Mi Carrito - Concentrados Danny</title>
+    
+    <style>
+        .navbar { background-color: #28a745 !important; }
+        .card-header { background-color: #e9f5ec; color: #155724; font-weight: bold; border-bottom: 2px solid #28a745; }
+        .total-box { background-color: #f8f9fa; border: 2px dashed #28a745; padding: 20px; border-radius: 10px; }
+        .btn-cart-action { transition: transform 0.2s; }
+        .btn-cart-action:hover { transform: scale(1.05); }
+    </style>
 </head>
-<style>
-    .navbar { background-color: #28a745 !important; }
-    .card-header { background-color: #e9f5ec; color: #155724; font-weight: bold; border-bottom: 2px solid #28a745; }
-    .total-box { background-color: #f8f9fa; border: 2px dashed #28a745; padding: 20px; border-radius: 10px; }
-    .btn-cart-action { transition: transform 0.2s; }
-    .btn-cart-action:hover { transform: scale(1.05); }
-</style>
 <body>
+
     <header th:replace="~{general/fragmentos :: header}"></header>
 
-    <div class="container mt-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">
-                    <i class="fas fa-shopping-cart me-2"></i> Mi Carrito de Compras
-                </h4>
-                <a th:href="@{/producto/listado}" class="btn btn-outline-danger btn-sm shadow-sm">
+    <main class="container mt-4 mb-5">
+
+        <!-- Banner / Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <h2 class="fw-bold text-success mb-0">
+                <i class="fas fa-shopping-cart me-2"></i>Carrito de Compras
+            </h2>
+            <div class="d-flex gap-2">
+                <a th:href="@{/producto/listado}" class="btn btn-outline-danger btn-sm shadow-sm btn-cart-action">
                     <i class="fas fa-arrow-left me-1"></i> Seguir Comprando
                 </a>
             </div>
+        </div>
+
+        <!-- Alerta de Error al generar PDF -->
+        <div th:if="${param.error}" class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> Hubo un problema al generar el PDF. Inténtalo de nuevo.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Contenido cuando SÍ hay ítems -->
+        <div th:if="${items != null and !items.empty}" class="row">
             
-            <div class="card-body p-4">
-                <div th:if="${param.error}" class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i> Hubo un problema al generar el PDF. Inténtalo de nuevo.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Tabla de productos -->
+            <div class="col-lg-8 mb-4">
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-hover align-middle mb-0 bg-white">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Precio</th>
+                                <th class="text-center" style="width: 140px;">Cantidad</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${items}">
+                                <td>
+                                    <span class="fw-bold d-block text-dark" th:text="${item.nombreProducto}">Producto</span>
+                                    <small class="text-muted" th:text="${item.descripcion}">Descripción</small>
+                                </td>
+                                
+                                <td class="text-center">
+                                    ₡[[${#numbers.formatDecimal(item.precio, 1, 'POINT', 0, 'COMMA')}]]
+                                </td>
+                                
+                                <td class="text-center">
+                                    <form th:action="@{/carrito/actualizar}" method="post" class="d-flex align-items-center justify-content-center">
+                                        <input type="hidden" name="idProducto" th:value="${item.idProducto}" />
+                                        <input type="number" name="cantidad" th:value="${item.cantidad}" 
+                                               min="1" max="99" 
+                                               class="form-control form-control-sm text-center me-1" 
+                                               style="width: 65px;" 
+                                               onchange="this.form.submit()" />
+                                    </form>
+                                </td>
+                                
+                                <td class="text-end fw-bold text-success">
+                                    ₡[[${#numbers.formatDecimal(item.precio * item.cantidad, 1, 'POINT', 0, 'COMMA')}]]
+                                </td>
+                                
+                                <td class="text-center">
+                                    <a th:href="@{/carrito/eliminar/} + ${item.idProducto}" 
+                                       class="text-danger btn-cart-action" 
+                                       title="Quitar del carrito">
+                                        <i class="fas fa-trash-alt fa-lg"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
-                <div th:if="${items == null or items.isEmpty()}" class="text-center py-5">
-                    <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
-                    <h3>Tu carrito está vacío</h3>
-                    <p class="text-muted">Parece que aún no has agregado concentrados.</p>
-                    <a th:href="@{/producto/listado}" class="btn btn-success mt-2">Ir a la tienda</a>
-                </div>
-
-                <div th:unless="${items == null or items.isEmpty()}">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Producto</th>
-                                    <th class="text-center">Precio</th>
-                                    <th class="text-center">Cantidad</th>
-                                    <th class="text-end">Subtotal</th>
-                                    <th class="text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="item : ${items}">
-                                    <td>
-                                        <strong th:text="${item.producto.nombre}">Producto</strong><br>
-                                        <small class="text-muted" th:text="${item.producto.marca}">Marca</small>
-                                    </td>
-                                    <td class="text-center">₡[[${#numbers.formatDecimal(item.producto.precio, 1, 'POINT', 0, 'COMMA')}]]</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary px-3 py-2" th:text="${item.cantidad}">1</span>
-                                    </td>
-                                    <td class="text-end fw-bold">
-                                        ₡[[${#numbers.formatDecimal(item.producto.precio * item.cantidad, 1, 'POINT', 0, 'COMMA')}]]
-                                    </td>
-                                    <td class="text-center">
-                                        <a th:href="@{/carrito/eliminar/{id}(id=${item.producto.idProducto})}" class="text-danger btn-cart-action">
-                                            <i class="fas fa-trash-alt fa-lg"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <!-- Caja con Total y Botones de Acción (Estilo total-box) -->
+            <div class="col-lg-4">
+                <div class="total-box shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Total a Pagar:</h4>
+                        <h3 class="text-success fw-bold mb-0" th:if="${totalCarrito != null}">
+                            ₡[[${#numbers.formatDecimal(totalCarrito, 1, 'POINT', 0, 'COMMA')}]]
+                        </h3>
                     </div>
 
-                    <div class="row mt-4 justify-content-end">
-                        <div class="col-md-5">
-                            <div class="total-box shadow-sm">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h4 class="mb-0">Total a Pagar:</h4>
-                                    <h3 class="text-success fw-bold mb-0" th:if="${total != null}">
-                                        ₡[[${#numbers.formatDecimal(total, 1, 'POINT', 0, 'COMMA')}]]
-                                    </h3>
-                                </div>
-                                
-                                <div class="d-grid gap-2">
-                                    <a th:href="@{/reporte/exportar-proforma}" 
-                                       target="_blank"
-                                       class="btn btn-danger py-2 fw-bold shadow-sm btn-cart-action mb-2">
-                                         <i class="fas fa-file-pdf me-2"></i> Descargar Cotización
-                                    </a>
+                    <div class="d-grid gap-2 mt-4">
+                        <!-- Botón Descargar PDF / Proforma -->
+                        <a th:href="@{/reporte/exportar-proforma}" 
+                           target="_blank"
+                           class="btn btn-danger py-2 fw-bold shadow-sm btn-cart-action mb-1">
+                            <i class="fas fa-file-pdf me-2"></i> Descargar Cotización
+                        </a>
 
-                                    <div sec:authorize="isAuthenticated()">
-                                        <form th:action="@{/venta/proceso}" method="post">
-                                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm btn-cart-action">
-                                                Confirmar Pedido <i class="fas fa-truck ms-1"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                    
-                                    <div sec:authorize="!isAuthenticated()">
-                                        <div class="alert alert-info py-2 small mb-2 text-center">
-                                            <i class="fas fa-info-circle"></i> Inicia sesión para finalizar la compra.
-                                        </div>
-                                        <a th:href="@{/login}" class="btn btn-primary py-2 fw-bold w-100 btn-cart-action">
-                                            Identificarse para Pagar
-                                        </a>
-                                    </div>
-                                </div>
+                        <!-- Botón Confirmar si está AUTENTICADO -->
+                        <div sec:authorize="isAuthenticated()">
+                            <form th:action="@{/venta/proceso}" method="post">
+                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm btn-cart-action">
+                                    Confirmar Pedido <i class="fas fa-truck ms-1"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Opción si es INVITADO / NO AUTENTICADO -->
+                        <div sec:authorize="!isAuthenticated()">
+                            <div class="alert alert-info py-2 small mb-2 text-center">
+                                <i class="fas fa-info-circle me-1"></i> Inicia sesión para finalizar la compra.
                             </div>
+                            <a th:href="@{/login}" class="btn btn-primary py-2 fw-bold w-100 btn-cart-action">
+                                Identificarse para Pagar
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
-    </div>
+
+        <!-- Mensaje si el Carrito está Vacío -->
+        <div th:if="${items == null or items.empty}" class="text-center py-5 shadow-sm bg-white rounded">
+            <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
+            <h3 class="fw-bold text-secondary">Tu carrito está vacío</h3>
+            <p class="text-muted">Parece que aún no has agregado concentrados.</p>
+            <a th:href="@{/producto/listado}" class="btn btn-success mt-2 btn-cart-action">
+                <i class="fas fa-store me-1"></i> Ir a la tienda
+            </a>
+        </div>
+
+    </main>
 
     <footer th:replace="~{general/fragmentos :: footer}"></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

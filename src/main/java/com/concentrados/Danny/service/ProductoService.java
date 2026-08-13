@@ -3,21 +3,28 @@ package com.concentrados.Danny.service;
 import com.concentrados.Danny.domain.Producto;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 public interface ProductoService {
 
+    List<Producto> getProductos(boolean activos);
+
     List<Producto> listarProductos();
+
+    Producto getProducto(Producto producto);
 
     Producto obtenerPorId(Long id);
 
-    Long guardarProductoPLSQL(Producto producto, Long idCategoria);
+    void save(Producto producto);
+
+    void delete(Producto producto);
 
     void eliminarProducto(Long id);
-    
-    Producto getProducto(Producto Producto);
-    
+
+    void guardarProductoPLSQL(Producto producto, Long idCategoria);
+
     BigDecimal calcularValorInventario();
-    
-    Map<String, Integer> obtenerStockPorMarca();
+
+    Integer obtenerStockPorMarca();
+
+    Integer obtenerStockPorMarca(String marca);
 }

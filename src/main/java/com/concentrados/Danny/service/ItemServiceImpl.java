@@ -97,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> lista = getItems();
         BigDecimal total = BigDecimal.ZERO;
         for (Item i : lista) {
-            total = total.add(i.getSubTotal());
+            total = total.add(BigDecimal.valueOf(i.getSubTotal()));
         }
         return total.doubleValue();
     }

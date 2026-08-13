@@ -36,7 +36,11 @@ public class VentaServiceImpl implements VentaService {
         // 1. Calcular el total acumulado de los ítems
         BigDecimal totalCalculado = BigDecimal.ZERO;
         for (Item item : items) {
-            totalCalculado = totalCalculado.add(item.getSubTotal());
+            if (item.getPrecio() != null) {
+                // Multiplicamos precio (Double) por cantidad y lo acumulamos en BigDecimal
+                BigDecimal subtotalItem = BigDecimal.valueOf(item.getPrecio() * item.getCantidad());
+                totalCalculado = totalCalculado.add(subtotalItem);
+            }
         }
 
         // 2. Crear y guardar el registro de la Factura
@@ -45,17 +49,20 @@ public class VentaServiceImpl implements VentaService {
 
         // 3. Crear los detalles de venta y rebajar existencias en base de datos
         for (Item item : items) {
+            // Conversión explícita de Double a BigDecimal para evitar error de tipos en la Venta
+            BigDecimal precioBigDecimal = (item.getPrecio() != null) ? BigDecimal.valueOf(item.getPrecio()) : BigDecimal.ZERO;
+
             Venta ventaDetalle = new Venta(
                 factura.getIdFactura(),
                 item.getIdProducto(),
-                item.getPrecio(),
+                precioBigDecimal,
                 item.getCantidad()
             );
             ventaRepository.save(ventaDetalle);
 
             // Descontar inventario
             Producto producto = productoRepository.findById(item.getIdProducto()).orElse(null);
-            if (producto != null) {
+            if (producto != null && producto.getStock() != null) {
                 int nuevoStock = producto.getStock() - item.getCantidad();
                 producto.setStock(Math.max(nuevoStock, 0));
                 productoRepository.save(producto);

@@ -1,147 +1,85 @@
 package com.concentrados.Danny.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
-import java.math.BigDecimal;
+import lombok.Data;
 
+@Data
 @Entity
-@Table(name = "PRODUCTO")
+@Table(name = "producto")
 public class Producto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_producto")
-    @SequenceGenerator(name = "seq_producto", sequenceName = "SEQ_PRODUCTO", allocationSize = 1)
-    @Column(name = "ID_PRODUCTO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_producto")
     private Long idProducto;
 
-    @Column(name = "NOMBRE", nullable = false, length = 100)
-    private String nombreProducto;
+    @Column(name = "nombre")
+    private String nombre;
 
-    @Column(name = "DESCRIPCION", length = 500)
+    @Column(name = "marca")
+    private String marca;
+
+    @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "MARCA", length = 100)
-    private String marca;
+    @Column(name = "unidad_medida")
+    private String unidadMedida;
+
+    @Column(name = "precio")
+    private Double precio;
+
+    @Column(name = "stock")
+    private Integer stock;
+
+    @Column(name = "stock_minimo")
+    private Integer stockMinimo;
+
+    @Column(name = "activo")
+    private Boolean activo;
+
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private Categoria categoria;
+
+    // Atributos no persistentes (ignora Oracle)
+    @Transient
+    private String rutaImagen;
 
     @Transient
     private String especie;
 
-    @Column(name = "UNIDAD_MEDIDA", length = 50)
-    private String unidadMedida;
-
-    @Transient
-    private String rutaImagen;
-
-    @Column(name = "PRECIO", nullable = false)
-    private BigDecimal precio;
-
-    @Column(name = "STOCK", nullable = false)
-    private Integer stock;
-
-    @Column(name = "ACTIVO", nullable = false)
-    private Integer activo;
-
     public Producto() {
     }
 
-    public Producto(String nombreProducto, String descripcion, String marca, String especie, String unidadMedida, String rutaImagen, BigDecimal precio, Integer stock, Integer activo) {
-        this.nombreProducto = nombreProducto;
-        this.descripcion = descripcion;
-        this.marca = marca;
-        this.especie = especie;
-        this.unidadMedida = unidadMedida;
-        this.rutaImagen = rutaImagen;
-        this.precio = precio;
-        this.stock = stock;
-        this.activo = activo;
-    }
-
-    public Long getIdProducto() {
-        return idProducto;
-    }
-
-    public void setIdProducto(Long idProducto) {
-        this.idProducto = idProducto;
-    }
-
+    // Métodos alias para no romper controladores viejos
+    @Transient
     public String getNombreProducto() {
-        return nombreProducto;
+        return this.nombre;
     }
 
+    @Transient
     public void setNombreProducto(String nombreProducto) {
-        this.nombreProducto = nombreProducto;
+        this.nombre = nombreProducto;
     }
 
-    // Alias para compatibilidad con llamadas getNombre()
-    public String getNombre() {
-        return nombreProducto;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
-    }
-
+    @Transient
     public String getEspecie() {
-        return especie;
+        return this.especie != null ? this.especie : this.descripcion;
     }
 
+    @Transient
     public void setEspecie(String especie) {
         this.especie = especie;
     }
-
-    public String getUnidadMedida() {
-        return unidadMedida;
-    }
-
-    public void setUnidadMedida(String unidadMedida) {
-        this.unidadMedida = unidadMedida;
-    }
-
-    public String getRutaImagen() {
-        return rutaImagen;
-    }
-
-    public void setRutaImagen(String rutaImagen) {
-        this.rutaImagen = rutaImagen;
-    }
-
-    public BigDecimal getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public Integer getActivo() {
-        return activo;
-    }
-
-    public void setActivo(Integer activo) {
-        this.activo = activo;
-    }
-    @Transient
-    private String fichaTecnica;
 }

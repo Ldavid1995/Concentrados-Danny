@@ -1,6 +1,5 @@
 package com.concentrados.Danny.controller;
 
-import com.concentrados.Danny.domain.Item;
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.service.ProductoService;
 import jakarta.servlet.http.HttpSession;
@@ -62,7 +61,7 @@ public class DeseosController {
         return redireccionSegura(redirect != null ? redirect : "/deseos/lista");
     }
 
-    // --- LÓGICA DE CARRITO (NUEVO) ---
+    // --- LÓGICA DE CARRITO ---
 
     @GetMapping("/carrito/agregar/{idProducto}")
     public String agregarAlCarrito(@PathVariable Long idProducto, 
@@ -80,7 +79,34 @@ public class DeseosController {
         return redireccionSegura(redirect);
     }
 
-    // --- MÉTODOS DE APOYO  ---
+    @GetMapping("/carrito/lista")
+    public String verCarrito(Model model, HttpSession session) {
+        Map<Long, Integer> carrito = obtenerCarrito(session);
+        
+        // Convertimos el Map en una lista de objetos que la vista entienda
+        List<ItemCarrito> items = carrito.entrySet().stream()
+                .map(entry -> {
+                    Producto p = buscarProducto(entry.getKey());
+                    return new ItemCarrito(p, entry.getValue());
+                })
+                .filter(item -> item.getProducto() != null)
+                .collect(Collectors.toList());
+
+        // Calcular el total acumulado de la lista de items usando BigDecimal
+        BigDecimal total = BigDecimal.ZERO;
+        for (ItemCarrito item : items) {
+            if (item.getProducto() != null && item.getProducto().getPrecio() != null) {
+                BigDecimal subtotalItem = BigDecimal.valueOf(item.getProducto().getPrecio() * item.getCantidad());
+                total = total.add(subtotalItem);
+            }
+        }
+
+        model.addAttribute("items", items);
+        model.addAttribute("total", total);
+        return "carrito/lista";
+    }
+
+    // --- MÉTODOS DE APOYO ---
 
     private Producto buscarProducto(Long idProducto) {
         Producto producto = new Producto();
@@ -119,41 +145,31 @@ public class DeseosController {
         }
         return "redirect:" + redirect;
     }
-    @GetMapping("/carrito/lista")
-public String verCarrito(Model model, HttpSession session) {
-    Map<Long, Integer> carrito = obtenerCarrito(session);
-    
-    // Convertimos el Map en una lista de objetos que la vista entienda
-    List<ItemCarrito> items = carrito.entrySet().stream()
-            .map(entry -> {
-                Producto p = buscarProducto(entry.getKey());
-                return new ItemCarrito(p, entry.getValue());
-            })
-            .filter(item -> item.getProducto() != null)
-            .collect(Collectors.toList());
 
+    // Clase interna auxiliar
+    public static class ItemCarrito {
+        private Producto producto;
+        private int cantidad;
 
-   // Para calcular el total acumulado de una lista de elementos 'items':
-BigDecimal total = BigDecimal.ZERO;
-    for (ItemCarrito item : items) { // Ajusta 'Item' al nombre de tu clase/entidad de lista de deseos
-        if (item.getProducto() != null && item.getProducto().getPrecio() != null) {
-            BigDecimal subtotal = item.getProducto().getPrecio().multiply(BigDecimal.valueOf(item.getCantidad()));
-            total = total.add(subtotal);
+        public ItemCarrito(Producto producto, int cantidad) { 
+            this.producto = producto; 
+            this.cantidad = cantidad; 
+        }
+
+        public Producto getProducto() { 
+            return producto; 
+        }
+
+        public int getCantidad() { 
+            return cantidad; 
+        }
+
+        public Double getPrecio() {
+            return (producto != null) ? producto.getPrecio() : 0.0;
+        }
+
+        public Double getSubtotal() {
+            return (producto != null && producto.getPrecio() != null) ? producto.getPrecio() * cantidad : 0.0;
         }
     }
-    model.addAttribute("total", total);
-
-    model.addAttribute("items", items);
-    model.addAttribute("total", total);
-    return "carrito/lista";
-}
-
-// Clase interna auxiliar (puedes ponerla al final del controlador)
-public static class ItemCarrito {
-    private Producto producto;
-    private int cantidad;
-    public ItemCarrito(Producto producto, int cantidad) { this.producto = producto; this.cantidad = cantidad; }
-    public Producto getProducto() { return producto; }
-    public int getCantidad() { return cantidad; }
-}
 }

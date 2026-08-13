@@ -84,6 +84,86 @@
         </nav>
     </header>
 
+    <!-- Modal para Agregar Producto -->
+    <div th:fragment="modalAgregarProducto" class="modal fade" id="agregarProductoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/producto/guardar}" th:object="${producto}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        
+                        <input type="hidden" th:field="*{idProducto}" />
+
+                        <!-- Seleccion de Categoria (Solución a ORA-01400) -->
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label fw-bold">Categoría</label>
+                            <select id="categoria" th:field="*{categoria.idCategoria}" class="form-select" required>
+                                <option value="" disabled selected>-- Seleccione una Categoría --</option>
+                                <option th:each="cat : ${categorias}" 
+                                        th:value="${cat.idCategoria}" 
+                                        th:text="${cat.descripcion}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre del Producto</label>
+                            <input type="text" th:field="*{nombre}" class="form-control" required placeholder="Ej: Concentrado Mascotas 10kg"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Marca</label>
+                            <input type="text" th:field="*{marca}" class="form-control" placeholder="Ej: Aguilar, Mimados..."/>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Descripción</label>
+                                <input type="text" th:field="*{descripcion}" class="form-control" placeholder="Ej: Para perros adultos"/>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Unidad de Medida</label>
+                                <select th:field="*{unidadMedida}" class="form-select" required>
+                                    <option value="Saco">Saco</option>
+                                    <option value="Kilo">Kilo</option>
+                                    <option value="Unidad">Unidad</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Precio (₡)</label>
+                                <input type="number" th:field="*{precio}" class="form-control" step="0.01" required/>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Existencias (Stock)</label>
+                                <input type="number" th:field="*{stock}" class="form-control" required/>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Stock Mínimo</label>
+                                <input type="number" th:field="*{stockMinimo}" class="form-control" value="1" required/>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" th:field="*{activo}" id="activo" checked>
+                            <label class="form-check-label fw-bold" for="activo">Producto Activo</label>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Guardar Producto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <footer th:fragment="footer" class="footer-custom mt-5">
         <div class="container text-center">
             <p class="mb-1">&copy; 2026 Concentrados Danny - San Rafael de Guatuso</p>

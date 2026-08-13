@@ -2,14 +2,12 @@ package com.concentrados.Danny.service;
 
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.repository.ProductoRepository;
-import java.math.BigDecimal;
-import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
@@ -19,8 +17,72 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Producto> getProductos(boolean activos) {
+        var lista = productoRepository.findAll();
+        if (activos) {
+            lista.removeIf(e -> !e.getActivo());
+        }
+        return lista;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Producto getProducto(Producto producto) {
+        return productoRepository.findById(producto.getIdProducto()).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void save(Producto producto) {
+        productoRepository.save(producto);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Producto producto) {
+        productoRepository.delete(producto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer obtenerStockPorMarca() {
+        return productoRepository.findAll().stream()
+                .mapToInt(p -> p.getStock() != null ? p.getStock() : 0)
+                .sum();
+    }
+
+    @Transactional(readOnly = true)
+    public Integer obtenerStockPorMarca(String marca) {
+        if (marca == null || marca.isBlank()) {
+            return 0;
+        }
+        return productoRepository.findAll().stream()
+                .filter(p -> p.getMarca() != null && p.getMarca().equalsIgnoreCase(marca))
+                .mapToInt(p -> p.getStock() != null ? p.getStock() : 0)
+                .sum();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal calcularValorInventario() {
+        double total = productoRepository.findAll().stream()
+                .filter(p -> p.getPrecio() != null && p.getStock() != null)
+                .mapToDouble(p -> p.getPrecio().doubleValue() * p.getStock())
+                .sum();
+        return BigDecimal.valueOf(total);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Producto> listarProductos() {
         return productoRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void guardarProductoPLSQL(Producto producto, Long idCategoria) {
+        // Guarda el producto usando el repositorio Spring Data JPA
+        productoRepository.save(producto);
     }
 
     @Override
@@ -30,44 +92,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    @Transactional
-    public Long guardarProductoPLSQL(Producto producto, Long idCategoria) {
-        Double precioDouble = producto.getPrecio() != null ? producto.getPrecio().doubleValue() : 0.0;
-        
-        return productoRepository.crearProducto(
-            producto.getNombreProducto(),
-            producto.getDescripcion(),
-            precioDouble,
-            producto.getStock(),
-            idCategoria
-        );
-    }
-
-    @Override
-    @Transactional
     public void eliminarProducto(Long id) {
-        productoRepository.deleteById(id);
-    }
-    @Override
-@Transactional(readOnly = true)
-public Map<String, Integer> obtenerStockPorMarca() {
-    List<Producto> lista = productoRepository.findAll();
-    Map<String, Integer> resumen = new HashMap<>();
-    for (Producto p : lista) {
-        String marca = (p.getMarca() != null && !p.getMarca().isBlank()) ? p.getMarca() : "Sin Marca";
-        int stock = p.getStock() != null ? p.getStock() : 0;
-        resumen.put(marca, resumen.getOrDefault(marca, 0) + stock);
-    }
-    return resumen;
-}
-
-    @Override
-    public Producto getProducto(Producto Producto) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public BigDecimal calcularValorInventario() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

@@ -16,7 +16,7 @@ public class Categoria implements Serializable {
     @Column(name = "ID_CATEGORIA")
     private Long idCategoria;
 
-    @Column(name = "NOMBRE", nullable = false, length = 100)
+    @Transient
     private String nombre;
 
     @Column(name = "DESCRIPCION", length = 300)

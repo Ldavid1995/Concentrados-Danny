@@ -1,44 +1,42 @@
 package com.concentrados.Danny.domain;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Item extends Producto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int cantidad;
 
-    public Item() {
-    }
-
     public Item(Producto producto) {
         super.setIdProducto(producto.getIdProducto());
-        super.setNombreProducto(producto.getNombreProducto());
+        super.setCategoria(producto.getCategoria());
+        super.setNombre(producto.getNombre());
+        super.setMarca(producto.getMarca());
         super.setDescripcion(producto.getDescripcion());
+        super.setUnidadMedida(producto.getUnidadMedida());
         super.setPrecio(producto.getPrecio());
         super.setStock(producto.getStock());
-        super.setActivo(producto.getActivo());
-        super.setMarca(producto.getMarca());
+        super.setStockMinimo(producto.getStockMinimo());
         super.setEspecie(producto.getEspecie());
-        super.setUnidadMedida(producto.getUnidadMedida());
         super.setRutaImagen(producto.getRutaImagen());
+        super.setActivo(producto.getActivo());
         this.cantidad = 0;
     }
 
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    // Subtotal calculado para evitar errores de operadores entre BigDecimal e int
-    public BigDecimal getSubTotal() {
-        if (getPrecio() == null) {
-            return BigDecimal.ZERO;
+    public double getSubTotal() {
+        if (getPrecio() != null) {
+            return getPrecio().doubleValue() * cantidad;
         }
-        return getPrecio().multiply(BigDecimal.valueOf(cantidad));
+        return 0.0;
     }
 }
