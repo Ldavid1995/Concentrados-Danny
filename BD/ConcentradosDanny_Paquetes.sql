@@ -869,3 +869,219 @@ CREATE OR REPLACE PACKAGE BODY pkg_cotizaciones AS
 
 END pkg_cotizaciones;
 /
+
+/*==============================================================
+                    PAQUETE INVENTARIO
+==============================================================*/
+
+CREATE OR REPLACE PACKAGE pkg_inventario AS
+
+    ------------------------------------------------------------
+    -- CREAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE crear_lote(
+        p_id_producto       IN NUMBER,
+        p_numero_lote       IN VARCHAR2,
+        p_fecha_ingreso     IN DATE,
+        p_fecha_vencimiento IN DATE,
+        p_cantidad          IN NUMBER,
+        p_id_lote           OUT NUMBER
+    );
+
+
+    ------------------------------------------------------------
+    -- CONSULTAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE consultar_lote(
+        p_id_lote           IN NUMBER,
+        p_id_producto       OUT NUMBER,
+        p_numero_lote       OUT VARCHAR2,
+        p_fecha_ingreso     OUT DATE,
+        p_fecha_vencimiento OUT DATE,
+        p_cantidad          OUT NUMBER,
+        p_activo            OUT NUMBER
+    );
+
+
+    ------------------------------------------------------------
+    -- ACTUALIZAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE actualizar_lote(
+        p_id_lote           IN NUMBER,
+        p_id_producto       IN NUMBER,
+        p_numero_lote       IN VARCHAR2,
+        p_fecha_ingreso     IN DATE,
+        p_fecha_vencimiento IN DATE,
+        p_cantidad          IN NUMBER
+    );
+
+
+    ------------------------------------------------------------
+    -- DESACTIVAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE desactivar_lote(
+        p_id_lote IN NUMBER
+    );
+
+END pkg_inventario;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_inventario AS
+
+
+    ------------------------------------------------------------
+    -- CREAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE crear_lote(
+        p_id_producto       IN NUMBER,
+        p_numero_lote       IN VARCHAR2,
+        p_fecha_ingreso     IN DATE,
+        p_fecha_vencimiento IN DATE,
+        p_cantidad          IN NUMBER,
+        p_id_lote           OUT NUMBER
+    ) AS
+    BEGIN
+
+        IF p_cantidad < 0 THEN
+            RAISE_APPLICATION_ERROR(
+                -20100,
+                'La cantidad del lote no puede ser negativa.'
+            );
+        END IF;
+
+        IF p_fecha_vencimiento <= p_fecha_ingreso THEN
+            RAISE_APPLICATION_ERROR(
+                -20101,
+                'La fecha de vencimiento debe ser mayor a la fecha de ingreso.'
+            );
+        END IF;
+
+        INSERT INTO lote(
+            id_producto,
+            numero_lote,
+            fecha_ingreso,
+            fecha_vencimiento,
+            cantidad,
+            activo
+        )
+        VALUES(
+            p_id_producto,
+            p_numero_lote,
+            p_fecha_ingreso,
+            p_fecha_vencimiento,
+            p_cantidad,
+            1
+        )
+        RETURNING id_lote INTO p_id_lote;
+
+    END crear_lote;
+
+
+    ------------------------------------------------------------
+    -- CONSULTAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE consultar_lote(
+        p_id_lote           IN NUMBER,
+        p_id_producto       OUT NUMBER,
+        p_numero_lote       OUT VARCHAR2,
+        p_fecha_ingreso     OUT DATE,
+        p_fecha_vencimiento OUT DATE,
+        p_cantidad          OUT NUMBER,
+        p_activo            OUT NUMBER
+    ) AS
+    BEGIN
+
+        SELECT id_producto,
+               numero_lote,
+               fecha_ingreso,
+               fecha_vencimiento,
+               cantidad,
+               activo
+        INTO   p_id_producto,
+               p_numero_lote,
+               p_fecha_ingreso,
+               p_fecha_vencimiento,
+               p_cantidad,
+               p_activo
+        FROM lote
+        WHERE id_lote = p_id_lote;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(
+                -20102,
+                'El lote no existe.'
+            );
+
+    END consultar_lote;
+
+
+    ------------------------------------------------------------
+    -- ACTUALIZAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE actualizar_lote(
+        p_id_lote           IN NUMBER,
+        p_id_producto       IN NUMBER,
+        p_numero_lote       IN VARCHAR2,
+        p_fecha_ingreso     IN DATE,
+        p_fecha_vencimiento IN DATE,
+        p_cantidad          IN NUMBER
+    ) AS
+    BEGIN
+
+        IF p_cantidad < 0 THEN
+            RAISE_APPLICATION_ERROR(
+                -20103,
+                'La cantidad del lote no puede ser negativa.'
+            );
+        END IF;
+
+        IF p_fecha_vencimiento <= p_fecha_ingreso THEN
+            RAISE_APPLICATION_ERROR(
+                -20104,
+                'La fecha de vencimiento debe ser mayor a la fecha de ingreso.'
+            );
+        END IF;
+
+        UPDATE lote
+        SET id_producto       = p_id_producto,
+            numero_lote       = p_numero_lote,
+            fecha_ingreso     = p_fecha_ingreso,
+            fecha_vencimiento = p_fecha_vencimiento,
+            cantidad          = p_cantidad
+        WHERE id_lote = p_id_lote;
+
+        IF SQL%ROWCOUNT = 0 THEN
+            RAISE_APPLICATION_ERROR(
+                -20105,
+                'El lote no existe.'
+            );
+        END IF;
+
+    END actualizar_lote;
+
+
+    ------------------------------------------------------------
+    -- DESACTIVAR LOTE
+    ------------------------------------------------------------
+    PROCEDURE desactivar_lote(
+        p_id_lote IN NUMBER
+    ) AS
+    BEGIN
+
+        UPDATE lote
+        SET activo = 0
+        WHERE id_lote = p_id_lote;
+
+        IF SQL%ROWCOUNT = 0 THEN
+            RAISE_APPLICATION_ERROR(
+                -20106,
+                'El lote no existe.'
+            );
+        END IF;
+
+    END desactivar_lote;
+
+
+END pkg_inventario;
+/
