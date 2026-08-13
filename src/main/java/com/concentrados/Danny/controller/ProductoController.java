@@ -1,6 +1,7 @@
 package com.concentrados.Danny.controller;
 
 import com.concentrados.Danny.domain.Producto;
+import com.concentrados.Danny.service.PlsqlService;
 import com.concentrados.Danny.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,9 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
+    @Autowired
+    private PlsqlService plsqlService;
+
     // Listar productos
     @GetMapping("/listado")
     public String inicio(Model model) {
@@ -26,12 +30,12 @@ public class ProductoController {
     // Formulario para nuevo producto
     @GetMapping("/nuevo")
     public String productoNuevo(Producto producto) {
-        return "/producto/modifica";
+        return "producto/modifica";
     }
 
     // Guardar usando el paquete PL/SQL
     @PostMapping("/guardar")
-    public String productoGuardar(Producto producto, @RequestParam("idCategoria") Long idCategoria) {
+    public String productoGuardar(Producto producto, @RequestParam(value = "idCategoria", required = false) Long idCategoria) {
         productoService.guardarProductoPLSQL(producto, idCategoria);
         return "redirect:/producto/listado";
     }

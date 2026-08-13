@@ -9,19 +9,23 @@
 <body>
     <div class="container mt-5 mb-5">
         <div class="card shadow">
-            <div class="card-header bg-success text-white">
-                <h4>Modificar Concentrado</h4>
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Modificar Concentrado</h4>
+                <!-- Botón rápido al panel principal desde el header -->
+                <a th:href="@{/}" class="btn btn-sm btn-light">
+                    <i class="fas fa-home me-1"></i> Panel Principal
+                </a>
             </div>
             <div class="card-body">
                 <form th:action="@{/producto/guardar}" th:object="${producto}" method="POST" enctype="multipart/form-data">
                     
                     <!-- Campos Ocultos -->
                     <input type="hidden" th:field="*{idProducto}"/>
-                    <input type="hidden" th:field="*{fichaTecnica}"/>
 
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
-                        <input type="text" th:field="*{nombre}" class="form-control" required/>
+                        <!-- Ajustado a nombreProducto según la entidad Java -->
+                        <input type="text" th:field="*{nombreProducto}" class="form-control" required/>
                     </div>
 
                     <div class="mb-3">
@@ -57,7 +61,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Existencias</label>
-                        <input type="number" th:field="*{existencias}" class="form-control" required/>
+                        <input type="number" th:field="*{stock}" class="form-control" required/>
                     </div>
 
                     <div class="row">
@@ -65,34 +69,39 @@
                             <label class="form-label fw-bold">Número de Lote</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-barcode"></i></span>
-                                <input type="text" th:field="*{lote}" class="form-control" placeholder="Ej: L-2024-01"/>
+                                <input type="text" name="lote" class="form-control" placeholder="Ej: L-2024-01"/>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Fecha de Vencimiento</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                <input type="date" th:field="*{fechaVencimiento}" class="form-control"/>
+                                <input type="date" name="fechaVencimiento" class="form-control"/>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="archivoFicha" class="form-label fw-bold">Actualizar Ficha Técnica</label>
+                        <label for="archivoFicha" class="form-label fw-bold">Subir / Adjuntar Documento</label>
                         <input class="form-control" type="file" name="archivoFicha" id="archivoFicha" />
-                        
-                        <div th:if="${producto.fichaTecnica != null}" class="form-text text-primary">
-                            Ficha actual: <span th:text="${producto.fichaTecnica}"></span>
-                        </div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a th:href="@{/producto/listado(especie=${producto.especie})}" class="btn btn-secondary">
-                            Regresar
-                        </a>
+                    <!-- Botonera Inferior -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <!-- Volver al catálogo por especie -->
+                            <a th:href="@{/producto/listado(especie=${producto.especie})}" class="btn btn-secondary me-2">
+                                <i class="fas fa-arrow-left me-1"></i> Regresar al Listado
+                            </a>
+
+                            <!-- Volver al Panel Principal/Inicio -->
+                            <a th:href="@{/}" class="btn btn-outline-dark">
+                                <i class="fas fa-chart-line me-1"></i> Panel Principal
+                            </a>
+                        </div>
 
                         <button type="submit" class="btn btn-success">
-                            Actualizar Cambios
+                            <i class="fas fa-save me-1"></i> Actualizar Cambios
                         </button>
                     </div>
 
