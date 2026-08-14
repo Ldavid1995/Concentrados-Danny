@@ -52,4 +52,42 @@ public class PlsqlService {
 
         return jdbcCall.executeFunction(String.class, idUsuario);
     }
+    
+    // =========================================================================
+    // 4. ELIMINAR PRODUCTO (Procedimiento PL/SQL)
+    // =========================================================================
+    public void eliminarProducto(int idProducto) {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withProcedureName("SP_ELIMINAR_PRODUCTO");
+
+        Map<String, Object> inParams = new HashMap<>();
+        inParams.put("P_ID_PRODUCTO", idProducto);
+
+        jdbcCall.execute(inParams);
+    }
+
+
+    // 5. VERIFICAR STOCK (Función PL/SQL)
+
+    public int verificarStock(int idProducto, int cantidadSolicitada) {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withFunctionName("FN_VERIFICAR_STOCK");
+
+        Map<String, Object> inParams = new HashMap<>();
+        inParams.put("P_ID_PRODUCTO", idProducto);
+        inParams.put("P_CANTIDAD", cantidadSolicitada);
+
+        return jdbcCall.executeFunction(Integer.class, inParams);
+    }
+    //Procedimiento actualizar
+    public void actualizarStock(int idProducto, int cantidad) {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withProcedureName("SP_ACTUALIZAR_STOCK");
+
+        Map<String, Object> inParams = new HashMap<>();
+        inParams.put("P_ID_PRODUCTO", idProducto);
+        inParams.put("P_CANTIDAD", cantidad);
+
+        jdbcCall.execute(inParams);
+    }
 }

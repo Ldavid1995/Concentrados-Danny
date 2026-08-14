@@ -1,5 +1,6 @@
 package com.concentrados.Danny.controller;
 
+import com.concentrados.Danny.domain.Categoria;
 import com.concentrados.Danny.domain.Producto;
 import com.concentrados.Danny.service.CategoriaService;
 import com.concentrados.Danny.service.ProductoService;
@@ -30,7 +31,7 @@ public class ProductoController {
         model.addAttribute("categorias", categorias);
         model.addAttribute("totalProductos", productos.size());
         model.addAttribute("producto", new Producto());
-        return "/producto/listado";
+        return "producto/listado";
     }
 
     @PostMapping("/guardar")
@@ -53,9 +54,15 @@ public class ProductoController {
     @GetMapping("/modificar/{idProducto}")
     public String productoModificar(Producto producto, Model model) {
         producto = productoService.getProducto(producto);
+        
+        
+        if (producto.getCategoria() == null) {
+            producto.setCategoria(new Categoria());
+        }
+        
         var categorias = categoriaService.getCategorias(false);
         model.addAttribute("producto", producto);
         model.addAttribute("categorias", categorias);
-        return "/producto/modifica";
+        return "producto/modifica";
     }
 }
